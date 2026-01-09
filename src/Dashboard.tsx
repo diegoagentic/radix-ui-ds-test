@@ -42,7 +42,7 @@ const trackingSteps = [
 ]
 
 export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: () => void, onNavigateToDetail: () => void }) {
-    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [isMainOpen, setIsMainOpen] = useState(true)
     const [isOperationsOpen, setIsOperationsOpen] = useState(true)
 
@@ -75,9 +75,14 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
             {/* Sidebar */}
             <Flex direction="column" style={{ width: '250px', backgroundColor: 'var(--color-panel-solid)', borderRight: '1px solid var(--gray-5)' }} display={{ initial: 'none', md: 'flex' }}>
                 <Flex align="center" px="4" style={{ height: '64px', borderBottom: '1px solid var(--gray-4)' }}>
-                    <Flex align="center" justify="center" style={{ width: '96px', height: '32px', backgroundColor: 'var(--gray-4)', borderRadius: '4px' }}>
-                        <Text size="1" weight="bold" style={{ letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gray-9)' }}>Tenant Logo</Text>
-                    </Flex>
+                    <style>{`
+                        .dashboard-logo-light { display: block; }
+                        .dashboard-logo-dark { display: none; }
+                        .dark .dashboard-logo-light, [data-theme='dark'] .dashboard-logo-light { display: none; }
+                        .dark .dashboard-logo-dark, [data-theme='dark'] .dashboard-logo-dark { display: block; }
+                    `}</style>
+                    <img className="dashboard-logo-light" src="/logo-on-light.jpg?v=2" alt="Strata" style={{ height: '32px', width: 'auto' }} />
+                    <img className="dashboard-logo-dark" src="/logo-on-dark.jpg?v=2" alt="Strata" style={{ height: '32px', width: 'auto' }} />
                 </Flex>
                 <Flex direction="column" p="3" gap="3" style={{ flex: 1, overflowY: 'auto' }}>
                     {/* Main Category */}
