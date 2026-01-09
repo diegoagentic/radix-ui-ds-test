@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
 import { Button, Card, Flex, Grid, Heading, Text, TextField, Avatar, Badge, Table, IconButton, Separator, Box, Popover, Checkbox, DropdownMenu, Dialog } from '@radix-ui/themes'
-import { MagnifyingGlassIcon, BellIcon, CalendarIcon, PlusIcon, CopyIcon, FileTextIcon, PaperPlaneIcon, ReaderIcon, DotsHorizontalIcon, ArrowRightIcon, PersonIcon, TargetIcon, RocketIcon, ViewGridIcon, ListBulletIcon, SunIcon, MoonIcon, ExitIcon, ChevronDownIcon, ChevronRightIcon, EyeOpenIcon, Pencil1Icon, TrashIcon, EnvelopeClosedIcon, CheckCircledIcon, ClockIcon, SewingPinIcon, Cross2Icon } from '@radix-ui/react-icons'
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
+import { MagnifyingGlassIcon, BellIcon, CalendarIcon, PlusIcon, CopyIcon, FileTextIcon, PaperPlaneIcon, ReaderIcon, DotsHorizontalIcon, ArrowRightIcon, PersonIcon, TargetIcon, RocketIcon, ViewGridIcon, ListBulletIcon, SunIcon, MoonIcon, ExitIcon, ChevronDownIcon, ChevronRightIcon, EyeOpenIcon, Pencil1Icon, TrashIcon, EnvelopeClosedIcon, CheckCircledIcon, ClockIcon, SewingPinIcon, Cross2Icon, HomeIcon, CubeIcon, BarChartIcon, ClipboardIcon } from '@radix-ui/react-icons'
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts'
 import { useTheme } from './ThemeContext';
 
 function ThemeToggle() {
     const { appearance, toggleTheme } = useTheme();
     return (
-        <IconButton variant="ghost" color="gray" onClick={toggleTheme}>
+        <IconButton variant="ghost" color="gray" onClick={toggleTheme} style={{ borderRadius: '9999px' }}>
             {appearance === 'dark' ? <SunIcon width="18" height="18" /> : <MoonIcon width="18" height="18" />}
         </IconButton>
     )
@@ -43,8 +43,7 @@ const trackingSteps = [
 
 export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: () => void, onNavigateToDetail: () => void }) {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [isMainOpen, setIsMainOpen] = useState(true)
-    const [isOperationsOpen, setIsOperationsOpen] = useState(true)
+    const { appearance } = useTheme();
 
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
@@ -71,572 +70,420 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
     }, [searchQuery, selectedStatuses])
 
     return (
-        <Flex style={{ minHeight: '100vh', backgroundColor: 'var(--gray-2)' }}>
-            {/* Sidebar */}
-            <Flex direction="column" style={{ width: '250px', backgroundColor: 'var(--color-panel-solid)', borderRight: '1px solid var(--gray-5)' }} display={{ initial: 'none', md: 'flex' }}>
-                <Flex align="center" px="4" style={{ height: '64px', borderBottom: '1px solid var(--gray-4)' }}>
-                    <style>{`
-                        .dashboard-logo-light { display: block; }
-                        .dashboard-logo-dark { display: none; }
-                        .dark .dashboard-logo-light, [data-theme='dark'] .dashboard-logo-light { display: none; }
-                        .dark .dashboard-logo-dark, [data-theme='dark'] .dashboard-logo-dark { display: block; }
-                    `}</style>
-                    <img className="dashboard-logo-light" src="/logo-on-light.jpg?v=2" alt="Strata" style={{ height: '32px', width: 'auto' }} />
-                    <img className="dashboard-logo-dark" src="/logo-on-dark.jpg?v=2" alt="Strata" style={{ height: '32px', width: 'auto' }} />
-                </Flex>
-                <Flex direction="column" p="3" gap="3" style={{ flex: 1, overflowY: 'auto' }}>
-                    {/* Main Category */}
-                    <Box>
-                        <Button
-                            variant="ghost"
-                            color="gray"
-                            style={{
-                                width: '100%',
-                                justifyContent: 'space-between',
-                                padding: '8px 12px',
-                                height: 'auto',
-                                cursor: 'pointer',
-                                textTransform: 'uppercase',
-                                color: 'var(--gray-9)',
-                                letterSpacing: '0.05em',
-                                fontWeight: 'bold',
-                                fontSize: '10px'
-                            }}
-                            onClick={() => setIsMainOpen(!isMainOpen)}
-                        >
-                            Main
-                            {isMainOpen ? <ChevronDownIcon width="12" height="12" /> : <ChevronRightIcon width="12" height="12" />}
-                        </Button>
-                        {isMainOpen && (
-                            <Flex direction="column" gap="1" mt="1" px="2">
-                                <Button variant="soft" color="gray" style={{ justifyContent: 'start', gap: '12px' }}>
-                                    <ReaderIcon /> Overview
-                                </Button>
-                            </Flex>
-                        )}
+        <Flex direction="column" style={{ minHeight: '100vh', backgroundColor: 'var(--gray-2)' }}>
+            <style>{`
+                .nav-glass {
+                    background-color: var(--color-panel-translucent);
+                    backdrop-filter: blur(12px);
+                    border: 1px solid var(--gray-a4);
+                    box-shadow: 0 4px 20px -5px rgba(0,0,0,0.1);
+                }
+                .nav-item-label {
+                    max-width: 0;
+                    opacity: 0;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                    white-space: nowrap;
+                    margin-left: 0;
+                }
+                .nav-item:hover .nav-item-label, .nav-item.active .nav-item-label {
+                    max-width: 100px;
+                    opacity: 1;
+                    margin-left: 8px;
+                }
+            `}</style>
+
+            {/* Floating Capsule Navbar */}
+            <Box
+                style={{
+                    position: 'fixed',
+                    top: '24px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 100,
+                    borderRadius: '9999px',
+                }}
+                className="nav-glass"
+            >
+                <Flex align="center" gap="2" p="2" style={{ paddingLeft: '16px', paddingRight: '8px' }}>
+                    {/* Logo */}
+                    <Box pr="2">
+                        <style>{`
+                            .dashboard-logo-light { display: block; }
+                            .dashboard-logo-dark { display: none; }
+                            .dark .dashboard-logo-light, [data-theme='dark'] .dashboard-logo-light { display: none; }
+                            .dark .dashboard-logo-dark, [data-theme='dark'] .dashboard-logo-dark { display: block; }
+                        `}</style>
+                        <img className="dashboard-logo-light" src="/logo-on-light.jpg" alt="Strata" style={{ height: '20px', width: 'auto' }} />
+                        <img className="dashboard-logo-dark" src="/logo-on-dark.jpg" alt="Strata" style={{ height: '20px', width: 'auto' }} />
                     </Box>
 
-                    {/* Operations Category */}
-                    <Box>
-                        <Button
-                            variant="ghost"
-                            color="gray"
-                            style={{
-                                width: '100%',
-                                justifyContent: 'space-between',
-                                padding: '8px 12px',
-                                height: 'auto',
-                                cursor: 'pointer',
-                                textTransform: 'uppercase',
-                                color: 'var(--gray-9)',
-                                letterSpacing: '0.05em',
-                                fontWeight: 'bold',
-                                fontSize: '10px'
-                            }}
-                            onClick={() => setIsOperationsOpen(!isOperationsOpen)}
-                        >
-                            Operations
-                            {isOperationsOpen ? <ChevronDownIcon width="12" height="12" /> : <ChevronRightIcon width="12" height="12" />}
-                        </Button>
-                        {isOperationsOpen && (
-                            <Flex direction="column" gap="1" mt="1" px="2">
-                                <Button variant="ghost" color="gray" style={{ justifyContent: 'start', gap: '12px' }}>
-                                    <TargetIcon /> Inventory
-                                </Button>
-                                <Button variant="ghost" color="gray" style={{ justifyContent: 'start', gap: '12px' }}>
-                                    <RocketIcon /> Production
-                                </Button>
-                                <Button variant="ghost" color="gray" style={{ justifyContent: 'start', gap: '12px' }}>
-                                    <FileTextIcon /> Orders
-                                </Button>
-                            </Flex>
-                        )}
-                    </Box>
-                </Flex>
-                <Flex p="4" gap="3" align="center" style={{ borderTop: '1px solid var(--gray-4)' }}>
-                    <Avatar fallback="JD" radius="full" size="2" />
-                    <Box style={{ flex: 1 }}>
-                        <Text as="div" size="2" weight="medium">Jhon Doe</Text>
-                        <Text as="div" size="1" color="gray">Admin</Text>
-                    </Box>
-                    <IconButton variant="ghost" color="gray" onClick={onLogout}>
-                        <ExitIcon />
-                    </IconButton>
-                </Flex>
-            </Flex>
+                    <Separator orientation="vertical" size="2" style={{ height: '24px' }} />
 
-            {/* Main Content */}
-            <Flex direction="column" style={{ flex: 1, overflow: 'hidden' }}>
-                {/* Header */}
-                <Flex align="center" justify="between" px="5" style={{ height: '64px', backgroundColor: 'var(--color-panel-solid)', borderBottom: '1px solid var(--gray-5)' }}>
-                    <Flex align="center" gap="2">
-                        <Text size="2" color="gray">Dashboard</Text>
-                        <ArrowRightIcon color="gray" width="12" />
-                        <Text size="2" weight="medium">Operational Overview</Text>
+                    {/* Nav Items */}
+                    <Flex gap="1">
+                        <NavItem icon={<HomeIcon />} label="Overview" active />
+                        <NavItem icon={<CubeIcon />} label="Inventory" />
+                        <NavItem icon={<BarChartIcon />} label="Production" />
+                        <NavItem icon={<ClipboardIcon />} label="Orders" />
                     </Flex>
+
+                    <Separator orientation="vertical" size="2" style={{ height: '24px' }} />
+
+                    {/* Tools */}
+                    <Flex gap="2" align="center">
+                        <ThemeToggle />
+                        <DropdownMenu.Root>
+                            <DropdownMenu.Trigger>
+                                <Button variant="ghost" radius="full" style={{ padding: '0 4px', height: '32px' }}>
+                                    <Avatar fallback="JD" size="1" radius="full" color="indigo" variant="soft" />
+                                </Button>
+                            </DropdownMenu.Trigger>
+                            <DropdownMenu.Content>
+                                <Box p="2">
+                                    <Text as="div" size="2" weight="bold">Jhon Doe</Text>
+                                    <Text as="div" size="1" color="gray">Admin</Text>
+                                </Box>
+                                <Separator size="4" my="1" />
+                                <DropdownMenu.Item color="red" onClick={onLogout}>
+                                    <ExitIcon /> Sign Out
+                                </DropdownMenu.Item>
+                            </DropdownMenu.Content>
+                        </DropdownMenu.Root>
+                    </Flex>
+                </Flex>
+            </Box>
+
+            {/* Main Content Area */}
+            <Box style={{ paddingTop: '100px', paddingBottom: '40px', paddingInline: '32px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+                {/* Header Section */}
+                <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align={{ initial: 'start', sm: 'center' }} gap="4" mb="8">
+                    <Box>
+                        <Heading size="6" weight="medium" style={{ background: 'linear-gradient(to right, var(--gray-12), var(--gray-10))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                            Operational Overview
+                        </Heading>
+                        <Text size="2" color="gray" mt="1">Jan 1 - Jan 31, 2025</Text>
+                    </Box>
                     <Flex gap="3" align="center">
-                        <TextField.Root placeholder="Search..." style={{ minWidth: '240px' }}>
+                        <TextField.Root placeholder="Search everything..." style={{ minWidth: '240px', borderRadius: '8px' }}>
                             <TextField.Slot><MagnifyingGlassIcon height="16" width="16" /></TextField.Slot>
                         </TextField.Root>
-                        <Button variant="outline" color="gray">
-                            <CalendarIcon /> Jan 1 - Jan 31, 2025
-                            Jan 1 - Jan 31, 2025
-                        </Button>
-                        <IconButton variant="ghost" color="gray">
+                        <IconButton variant="outline" color="gray" style={{ borderRadius: '8px' }}>
                             <BellIcon width="18" height="18" />
                         </IconButton>
-                        <ThemeToggle />
                     </Flex>
                 </Flex>
 
-                {/* Scrollable Area */}
-                <Box style={{ flex: 1, overflow: 'auto', padding: '32px' }}>
-                    <Flex direction="column" gap="6">
+                {/* KPI Cards */}
+                <Grid columns={{ initial: '1', sm: '2', lg: '4' }} gap="5" mb="8">
+                    <KPICard title="Total Inventory" value="$1.2M" trend="+0.2% vs last month" trendUp icon={<CubeIcon />} />
+                    <KPICard title="Efficiency" value="88%" trend="+3.5% vs last month" trendUp icon={<BarChartIcon />} />
+                    <KPICard title="Pending Orders" value="142" trend="-12 vs yesterday" icon={<ClipboardIcon />} />
+                    <KPICard title="Low Stock" value="15" trend="Requires attention" trendAlert icon={<TargetIcon />} />
+                </Grid>
 
-                        {/* KPI Cards */}
-                        <Grid columns={{ initial: '1', sm: '2', lg: '4' }} gap="4">
-                            <Card>
-                                <Flex direction="column" gap="1">
-                                    <Text size="1" weight="medium" style={{ textTransform: 'uppercase', color: 'var(--gray-9)' }}>Total Inventory Value</Text>
-                                    <Text size="6" weight="regular">$1.2M</Text>
-                                    <Text size="1" color="green" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <ArrowRightIcon style={{ transform: 'rotate(-45deg)' }} /> +0.2% vs last month
-                                    </Text>
-                                </Flex>
-                            </Card>
-                            <Card>
-                                <Flex direction="column" gap="1">
-                                    <Text size="1" weight="medium" style={{ textTransform: 'uppercase', color: 'var(--gray-9)' }}>Production Efficiency</Text>
-                                    <Text size="6" weight="regular">88%</Text>
-                                    <Text size="1" color="green" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <ArrowRightIcon style={{ transform: 'rotate(-45deg)' }} /> +3.5% vs last month
-                                    </Text>
-                                </Flex>
-                            </Card>
-                            <Card>
-                                <Flex direction="column" gap="1">
-                                    <Text size="1" weight="medium" style={{ textTransform: 'uppercase', color: 'var(--gray-9)' }}>Pending Orders</Text>
-                                    <Text size="6" weight="regular">142</Text>
-                                    <Text size="1" color="gray">
-                                        -12 vs yesterday
-                                    </Text>
-                                </Flex>
-                            </Card>
-                            <Card>
-                                <Flex direction="column" gap="1">
-                                    <Text size="1" weight="medium" style={{ textTransform: 'uppercase', color: 'var(--gray-9)' }}>Low Stock Alerts</Text>
-                                    <Text size="6" weight="regular">15</Text>
-                                    <Text size="1" color="red" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        Requires attention
-                                    </Text>
-                                </Flex>
-                            </Card>
-                        </Grid>
-
-                        {/* Quick Actions */}
-                        <Flex direction="column" gap="3">
-                            <Heading size="3" color="gray" weight="medium">Quick Actions</Heading>
-                            <Grid columns={{ initial: '2', md: '5' }} gap="4">
-                                <Button variant="outline" color="gray" style={{ height: '96px', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--color-panel-solid)', color: 'var(--gray-12)' }}>
-                                    <Box style={{ backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)', padding: '6px', borderRadius: '6px', display: 'flex' }}><PlusIcon width="20" height="20" /></Box>
-                                    <Text size="2" weight="medium">New Order</Text>
-                                </Button>
-                                <Button variant="outline" color="gray" style={{ height: '96px', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--color-panel-solid)', color: 'var(--gray-12)' }}>
-                                    <Box style={{ backgroundColor: 'var(--gray-3)', color: 'var(--gray-11)', padding: '6px', borderRadius: '6px', display: 'flex' }}><CopyIcon width="20" height="20" /></Box>
-                                    <Text size="2" weight="medium">Duplicate</Text>
-                                </Button>
-                                <Button variant="outline" color="gray" style={{ height: '96px', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--color-panel-solid)', color: 'var(--gray-12)' }}>
-                                    <Box style={{ backgroundColor: 'var(--gray-3)', color: 'var(--gray-11)', padding: '6px', borderRadius: '6px', display: 'flex' }}><FileTextIcon width="20" height="20" /></Box>
-                                    <Text size="2" weight="medium">Export PDF</Text>
-                                </Button>
-                                <Button variant="outline" color="gray" style={{ height: '96px', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--color-panel-solid)', color: 'var(--gray-12)' }}>
-                                    <Box style={{ backgroundColor: 'var(--gray-3)', color: 'var(--gray-11)', padding: '6px', borderRadius: '6px', display: 'flex' }}><PaperPlaneIcon width="20" height="20" /></Box>
-                                    <Text size="2" weight="medium">Send Email</Text>
-                                </Button>
-                                <Button variant="outline" color="gray" style={{ height: '96px', flexDirection: 'column', gap: '8px', backgroundColor: 'var(--color-panel-solid)', color: 'var(--gray-12)' }}>
-                                    <Box style={{ backgroundColor: 'var(--gray-3)', color: 'var(--gray-11)', padding: '6px', borderRadius: '6px', display: 'flex' }}><ReaderIcon width="20" height="20" /></Box>
-                                    <Text size="2" weight="medium">Templates</Text>
-                                </Button>
-                            </Grid>
-                        </Flex>
-
-                        {/* Main Grid */}
-                        <Grid columns={{ initial: '1', lg: '3' }} gap="6">
-                            {/* Orders Table - Spans 3 columns */}
-                            <Box style={{ gridColumn: 'span 3' }}>
-                                <Card size="3">
-                                    <Flex justify="between" align="center" mb="4">
-                                        <Heading size="3">Recent Orders</Heading>
-                                        <Flex gap="3" align="center">
-                                            <TextField.Root placeholder="Search orders..." style={{ minWidth: '200px' }} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}>
-                                                <TextField.Slot><MagnifyingGlassIcon height="16" width="16" /></TextField.Slot>
-                                            </TextField.Root>
-                                            <Flex gap="0" style={{ backgroundColor: 'var(--gray-3)', padding: '2px', borderRadius: '6px' }}>
-                                                <IconButton
-                                                    variant={viewMode === 'list' ? 'surface' : 'ghost'}
-                                                    color="gray"
-                                                    style={{ width: '28px', height: '28px' }}
-                                                    onClick={() => setViewMode('list')}
-                                                >
-                                                    <ListBulletIcon />
-                                                </IconButton>
-                                                <IconButton
-                                                    variant={viewMode === 'grid' ? 'surface' : 'ghost'}
-                                                    color="gray"
-                                                    style={{ width: '28px', height: '28px' }}
-                                                    onClick={() => setViewMode('grid')}
-                                                >
-                                                    <ViewGridIcon />
-                                                </IconButton>
-                                            </Flex>
-
-                                            <Popover.Root>
-                                                <Popover.Trigger>
-                                                    <Button variant="soft" color="gray">
-                                                        Status <ChevronDownIcon />
-                                                    </Button>
-                                                </Popover.Trigger>
-                                                <Popover.Content style={{ width: '200px' }}>
-                                                    <Flex direction="column" gap="2">
-                                                        {['Pending Review', 'In Production', 'Shipped'].map((status) => (
-                                                            <Text as="label" size="2" key={status} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                                                <Checkbox
-                                                                    checked={selectedStatuses.includes(status)}
-                                                                    onCheckedChange={(checked) => {
-                                                                        if (checked) {
-                                                                            setSelectedStatuses([...selectedStatuses, status])
-                                                                        } else {
-                                                                            setSelectedStatuses(selectedStatuses.filter(s => s !== status))
-                                                                        }
-                                                                    }}
-                                                                /> {status}
-                                                            </Text>
-                                                        ))}
-                                                        <Separator size="4" />
-                                                        <Button variant="ghost" color="gray" onClick={() => setSelectedStatuses([])}>Clear Filter</Button>
-                                                    </Flex>
-                                                </Popover.Content>
-                                            </Popover.Root>
-                                        </Flex>
+                {/* Quick Actions */}
+                <Box mb="8" style={{ overflowX: 'auto' }}>
+                    <Flex align="center" gap="6" style={{ minWidth: 'max-content' }}>
+                        <Text size="3" weight="medium" color="gray">Quick Actions</Text>
+                        <Flex gap="4">
+                            {[
+                                { icon: <PlusIcon width="18" height="18" />, label: "New Order" },
+                                { icon: <CopyIcon width="18" height="18" />, label: "Duplicate" },
+                                { icon: <FileTextIcon width="18" height="18" />, label: "Export PDF" },
+                                { icon: <PaperPlaneIcon width="18" height="18" />, label: "Send Email" },
+                                { icon: <ReaderIcon width="18" height="18" />, label: "Templates" },
+                            ].map((action, i) => (
+                                <Flex key={i} direction="column" align="center" gap="2" style={{ cursor: 'pointer' }} className="group">
+                                    <Flex
+                                        align="center" justify="center"
+                                        style={{
+                                            width: '48px', height: '48px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'var(--color-panel-solid)',
+                                            border: '1px dashed var(--gray-8)',
+                                            color: 'var(--gray-11)',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                        className="action-icon"
+                                    >
+                                        {action.icon}
                                     </Flex>
-                                    {viewMode === 'list' ? (
-                                        <Table.Root>
-                                            <Table.Header>
-                                                <Table.Row>
-                                                    <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
-                                                    <Table.ColumnHeaderCell>Customer</Table.ColumnHeaderCell>
-                                                    <Table.ColumnHeaderCell>Amount</Table.ColumnHeaderCell>
-                                                    <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-                                                    <Table.ColumnHeaderCell>Due Date</Table.ColumnHeaderCell>
-                                                    <Table.ColumnHeaderCell align="right">Actions</Table.ColumnHeaderCell>
-                                                </Table.Row>
-                                            </Table.Header>
-                                            <Table.Body>
-                                                {filteredOrders.map((order) => (
-                                                    <>
-                                                        <Table.Row
-                                                            key={order.id}
-                                                            style={{ cursor: 'pointer', backgroundColor: expandedIds.has(order.id) ? 'var(--gray-3)' : undefined }}
-                                                            className="hover:bg-gray-200 dark:hover:bg-gray-800"
-                                                            onClick={() => toggleExpand(order.id)}
-                                                        >
-                                                            <Table.RowHeaderCell>
-                                                                <Flex align="center" gap="2">
-                                                                    {expandedIds.has(order.id) ? <ChevronDownIcon /> : <ChevronRightIcon />}
-                                                                    {order.id}
-                                                                </Flex>
-                                                            </Table.RowHeaderCell>
-                                                            <Table.Cell>
-                                                                <Flex align="center" gap="2">
-                                                                    <Avatar fallback={order.avatar} size="1" radius="full" /> {order.customer}
-                                                                </Flex>
-                                                            </Table.Cell>
-                                                            <Table.Cell>{order.amount}</Table.Cell>
-                                                            <Table.Cell><Badge color={order.statusColor}>{order.status}</Badge></Table.Cell>
-                                                            <Table.Cell>{order.date}</Table.Cell>
-                                                            <Table.Cell align="right" onClick={(e) => e.stopPropagation()}>
-                                                                <DropdownMenu.Root>
-                                                                    <DropdownMenu.Trigger><IconButton variant="ghost"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
-                                                                    <DropdownMenu.Content>
-                                                                        <DropdownMenu.Item onClick={onNavigateToDetail}>
-                                                                            <EyeOpenIcon /> View Details
-                                                                        </DropdownMenu.Item>
-                                                                        <DropdownMenu.Item>
-                                                                            <Pencil1Icon /> Edit
-                                                                        </DropdownMenu.Item>
-                                                                        <DropdownMenu.Item>
-                                                                            <TrashIcon /> Delete
-                                                                        </DropdownMenu.Item>
-                                                                        <DropdownMenu.Item>
-                                                                            <EnvelopeClosedIcon /> Contact
-                                                                        </DropdownMenu.Item>
-                                                                    </DropdownMenu.Content>
-                                                                </DropdownMenu.Root>
-                                                            </Table.Cell>
-                                                        </Table.Row>
-                                                        {expandedIds.has(order.id) && (
-                                                            <Table.Row style={{ backgroundColor: 'var(--gray-2)' }}>
-                                                                <Table.Cell colSpan={6} style={{ padding: 0 }}>
-                                                                    <Box p="5">
-                                                                        <Flex direction="column" gap="5">
-                                                                            <Flex justify="between" align="start">
-                                                                                <Flex gap="3" align="center">
-                                                                                    <Avatar size="3" fallback={<PersonIcon />} radius="full" color="gray" variant="soft" />
-                                                                                    <Box>
-                                                                                        <Text as="div" size="2" weight="medium">Sarah Johnson</Text>
-                                                                                        <Text as="div" size="1" color="gray">Project Manager</Text>
-                                                                                    </Box>
-                                                                                </Flex>
-                                                                                <Grid columns="2" gap="5" width="300px">
-                                                                                    <Box>
-                                                                                        <Text as="div" size="1" color="gray" weight="medium" style={{ textTransform: 'uppercase', marginBottom: '4px' }}>Location</Text>
-                                                                                        <Flex align="center" gap="2">
-                                                                                            <SewingPinIcon color="var(--gray-10)" />
-                                                                                            <Text size="2">NY, USA</Text>
-                                                                                        </Flex>
-                                                                                    </Box>
-                                                                                    <Box>
-                                                                                        <Text as="div" size="1" color="gray" weight="medium" style={{ textTransform: 'uppercase', marginBottom: '4px' }}>Project ID</Text>
-                                                                                        <Text size="2">PRJ-24-87</Text>
-                                                                                    </Box>
-                                                                                </Grid>
-                                                                            </Flex>
+                                    <Text size="1" weight="medium" color="gray" style={{ transition: 'color 0.2s ease' }}>{action.label}</Text>
+                                    <style>{`
+                                        .group:hover .action-icon {
+                                            border-color: var(--accent-9);
+                                            background-color: var(--accent-3);
+                                            color: var(--accent-9);
+                                        }
+                                        .group:hover span {
+                                            color: var(--gray-12);
+                                        }
+                                    `}</style>
+                                </Flex>
+                            ))}
+                        </Flex>
+                    </Flex>
+                </Box>
 
-                                                                            <Box style={{ position: 'relative', paddingBlock: '10px' }}>
-                                                                                <Box style={{ position: 'absolute', top: '24px', left: 0, right: 0, height: '2px', backgroundColor: 'var(--gray-5)', zIndex: 0 }} />
-                                                                                <Flex justify="between" style={{ position: 'relative', zIndex: 1 }}>
-                                                                                    {['Order Placed', 'Manufacturing', 'Quality', 'Shipping'].map((step, i) => (
-                                                                                        <Flex key={i} direction="column" align="center" gap="2" style={{ backgroundColor: 'var(--gray-2)', paddingInline: '8px' }}>
-                                                                                            <Flex
-                                                                                                align="center"
-                                                                                                justify="center"
-                                                                                                style={{
-                                                                                                    width: '32px',
-                                                                                                    height: '32px',
-                                                                                                    borderRadius: '50%',
-                                                                                                    backgroundColor: i <= 1 ? 'var(--gray-12)' : 'var(--color-panel-solid)',
-                                                                                                    border: `1px solid ${i <= 1 ? 'var(--gray-12)' : 'var(--gray-6)'}`,
-                                                                                                    color: i <= 1 ? 'var(--gray-1)' : 'var(--gray-8)'
-                                                                                                }}
-                                                                                            >
-                                                                                                {i < 1 ? <CheckCircledIcon /> : i === 1 ? <ClockIcon /> : <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--gray-8)' }} />}
-                                                                                            </Flex>
-                                                                                            <Text size="1" weight={i <= 1 ? 'medium' : 'regular'} color={i <= 1 ? 'gray' : 'gray'}>{step}</Text>
-                                                                                        </Flex>
-                                                                                    ))}
-                                                                                </Flex>
-                                                                            </Box>
-
-                                                                            <Flex align="center" gap="3" p="3" style={{ border: '1px solid var(--gray-5)', borderRadius: '6px', backgroundColor: 'var(--color-panel-solid)' }}>
-                                                                                <RocketIcon width="18" height="18" color="var(--gray-10)" />
-                                                                                <Box style={{ flex: 1 }}>
-                                                                                    <Text as="div" size="2" weight="medium">Truck delayed at Customs - New ETA +24h</Text>
-                                                                                    <Text as="div" size="1" color="gray">The delivery truck has been delayed at the export checkpoint. Estimated arrival updated.</Text>
-                                                                                </Box>
-                                                                                <Button size="1" variant="soft" color="gray" onClick={() => setTrackingOrder(order)}>Track</Button>
-                                                                            </Flex>
-                                                                        </Flex>
-                                                                    </Box>
-                                                                </Table.Cell>
-                                                            </Table.Row>
-                                                        )}
-                                                    </>
+                {/* Main Content Grid */}
+                <Grid columns={{ initial: '1', lg: '3' }} gap="6">
+                    {/* Orders Table */}
+                    <Box style={{ gridColumn: 'span 3' }}>
+                        <Card size="3" style={{ borderRadius: '16px' }}>
+                            <Flex justify="between" align="center" mb="5">
+                                <Flex align="center" gap="3">
+                                    <Heading size="3">Recent Orders</Heading>
+                                    <Badge variant="soft" color="gray" radius="full">Active</Badge>
+                                </Flex>
+                                <Flex gap="3" align="center">
+                                    <Flex gap="0" style={{ backgroundColor: 'var(--gray-3)', padding: '2px', borderRadius: '8px' }}>
+                                        <IconButton
+                                            variant={viewMode === 'list' ? 'surface' : 'ghost'}
+                                            color="gray"
+                                            size="1"
+                                            onClick={() => setViewMode('list')}
+                                            style={{ borderRadius: '6px' }}
+                                        >
+                                            <ListBulletIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            variant={viewMode === 'grid' ? 'surface' : 'ghost'}
+                                            color="gray"
+                                            size="1"
+                                            onClick={() => setViewMode('grid')}
+                                            style={{ borderRadius: '6px' }}
+                                        >
+                                            <ViewGridIcon />
+                                        </IconButton>
+                                    </Flex>
+                                    <Popover.Root>
+                                        <Popover.Trigger>
+                                            <Button variant="outline" color="gray" radius="large" size="1">
+                                                Status <ChevronDownIcon />
+                                            </Button>
+                                        </Popover.Trigger>
+                                        <Popover.Content style={{ width: '200px' }}>
+                                            <Flex direction="column" gap="2">
+                                                {['Pending Review', 'In Production', 'Shipped'].map((status) => (
+                                                    <Text as="label" size="2" key={status} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                                        <Checkbox
+                                                            checked={selectedStatuses.includes(status)}
+                                                            onCheckedChange={(checked) => {
+                                                                if (checked) {
+                                                                    setSelectedStatuses([...selectedStatuses, status])
+                                                                } else {
+                                                                    setSelectedStatuses(selectedStatuses.filter(s => s !== status))
+                                                                }
+                                                            }}
+                                                        /> {status}
+                                                    </Text>
                                                 ))}
-                                                {filteredOrders.length === 0 && (
-                                                    <Table.Row>
-                                                        <Table.Cell colSpan={6} align="center" style={{ color: 'var(--gray-9)', padding: '24px' }}>
-                                                            No orders found matching your criteria.
+                                                <Separator size="4" />
+                                                <Button variant="ghost" size="1" onClick={() => setSelectedStatuses([])}>Clear Filter</Button>
+                                            </Flex>
+                                        </Popover.Content>
+                                    </Popover.Root>
+                                </Flex>
+                            </Flex>
+
+                            {viewMode === 'list' ? (
+                                <Table.Root>
+                                    <Table.Header>
+                                        <Table.Row>
+                                            <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>Customer</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>Amount</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell align="right">Actions</Table.ColumnHeaderCell>
+                                        </Table.Row>
+                                    </Table.Header>
+                                    <Table.Body>
+                                        {filteredOrders.map((order) => (
+                                            <>
+                                                <Table.Row
+                                                    key={order.id}
+                                                    style={{ cursor: 'pointer', backgroundColor: expandedIds.has(order.id) ? 'var(--accent-2)' : undefined }}
+                                                    className="hover-row"
+                                                    onClick={() => toggleExpand(order.id)}
+                                                >
+                                                    <Table.RowHeaderCell>
+                                                        <Flex align="center" gap="2">
+                                                            {expandedIds.has(order.id) ? <ChevronDownIcon color="var(--accent-9)" /> : <ChevronRightIcon color="var(--gray-8)" />}
+                                                            <Text weight="medium">{order.id}</Text>
+                                                        </Flex>
+                                                    </Table.RowHeaderCell>
+                                                    <Table.Cell>
+                                                        <Flex align="center" gap="2">
+                                                            <Avatar fallback={order.avatar} size="1" radius="full" color="gray" variant="soft" /> {order.customer}
+                                                        </Flex>
+                                                    </Table.Cell>
+                                                    <Table.Cell>{order.amount}</Table.Cell>
+                                                    <Table.Cell><Badge color={order.statusColor} variant="soft" radius="full">{order.status}</Badge></Table.Cell>
+                                                    <Table.Cell color="gray">{order.date}</Table.Cell>
+                                                    <Table.Cell align="right" onClick={(e) => e.stopPropagation()}>
+                                                        <DropdownMenu.Root>
+                                                            <DropdownMenu.Trigger><IconButton variant="ghost" color="gray" size="1"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
+                                                            <DropdownMenu.Content>
+                                                                <DropdownMenu.Item onClick={onNavigateToDetail}><EyeOpenIcon /> View Details</DropdownMenu.Item>
+                                                                <DropdownMenu.Item><Pencil1Icon /> Edit</DropdownMenu.Item>
+                                                                <DropdownMenu.Item><TrashIcon /> Delete</DropdownMenu.Item>
+                                                                <DropdownMenu.Item><EnvelopeClosedIcon /> Contact</DropdownMenu.Item>
+                                                            </DropdownMenu.Content>
+                                                        </DropdownMenu.Root>
+                                                    </Table.Cell>
+                                                </Table.Row>
+                                                {/* Details Row */}
+                                                {expandedIds.has(order.id) && (
+                                                    <Table.Row style={{ backgroundColor: 'var(--gray-2)' }}>
+                                                        <Table.Cell colSpan={6} style={{ padding: 0 }}>
+                                                            <Box p="5">
+                                                                <Flex gap="6" direction={{ initial: 'column', md: 'row' }}>
+                                                                    <Flex direction="column" gap="4" style={{ flex: 1 }}>
+                                                                        <Flex align="center" gap="3">
+                                                                            <Avatar size="3" fallback={<PersonIcon />} radius="full" color="gray" variant="soft" />
+                                                                            <Box>
+                                                                                <Text as="div" size="2" weight="medium">Sarah Johnson</Text>
+                                                                                <Text as="div" size="1" color="gray">Project Manager</Text>
+                                                                            </Box>
+                                                                        </Flex>
+                                                                        <Separator size="4" />
+                                                                        <Box style={{ position: 'relative', paddingBlock: '10px' }}>
+                                                                            <Box style={{ position: 'absolute', top: '16px', left: 0, right: 0, height: '2px', backgroundColor: 'var(--gray-5)', zIndex: 0 }} />
+                                                                            <Flex justify="between" style={{ position: 'relative', zIndex: 1 }}>
+                                                                                {['Placed', 'Mfg', 'Qual', 'Ship'].map((step, i) => (
+                                                                                    <Flex key={i} direction="column" align="center" gap="2" style={{ backgroundColor: 'var(--gray-2)', paddingInline: '8px' }}>
+                                                                                        <Flex
+                                                                                            align="center" justify="center"
+                                                                                            style={{
+                                                                                                width: '24px', height: '24px', borderRadius: '50%',
+                                                                                                backgroundColor: i <= 1 ? 'var(--heading)' : 'var(--color-panel-solid)',
+                                                                                                border: `1px solid ${i <= 1 ? 'var(--heading)' : 'var(--gray-6)'}`,
+                                                                                                color: i <= 1 ? 'var(--color-background)' : 'var(--gray-8)'
+                                                                                            }}
+                                                                                        >
+                                                                                            {i < 1 ? <CheckCircledIcon /> : <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'currentColor' }} />}
+                                                                                        </Flex>
+                                                                                        <Text size="1" color={i <= 1 ? 'gray' : 'gray'}>{step}</Text>
+                                                                                    </Flex>
+                                                                                ))}
+                                                                            </Flex>
+                                                                        </Box>
+                                                                    </Flex>
+                                                                    <Box style={{ width: '300px' }}>
+                                                                        <Card size="1">
+                                                                            <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase', marginBottom: '8px' }}>Alert</Text>
+                                                                            <Flex gap="3">
+                                                                                <RocketIcon width="18" height="18" color="var(--orange-9)" />
+                                                                                <Box>
+                                                                                    <Text as="div" size="2" weight="medium" color="orange">Customs Delay</Text>
+                                                                                    <Text as="div" size="1" color="gray">Held at port. ETA +24h.</Text>
+                                                                                    <Text as="div" size="1" color="blue" style={{ marginTop: '8px', cursor: 'pointer' }} onClick={() => setTrackingOrder(order)}>Track Shipment</Text>
+                                                                                </Box>
+                                                                            </Flex>
+                                                                        </Card>
+                                                                    </Box>
+                                                                </Flex>
+                                                            </Box>
                                                         </Table.Cell>
                                                     </Table.Row>
                                                 )}
-                                            </Table.Body>
-                                        </Table.Root>
-                                    ) : (
-                                        <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4">
-                                            {filteredOrders.map((order) => (
-                                                <Card
-                                                    key={order.id}
-                                                    variant={expandedIds.has(order.id) ? "classic" : "surface"}
-                                                    style={{
-                                                        cursor: 'pointer',
-                                                        borderColor: expandedIds.has(order.id) ? 'var(--gray-8)' : undefined
-                                                    }}
-                                                    onClick={() => toggleExpand(order.id)}
-                                                >
-                                                    <Flex justify="between" align="start" mb="3">
-                                                        <Box>
-                                                            <Flex align="center" gap="2">
-                                                                <Text as="div" weight="bold" size="2">{order.id}</Text>
-                                                                {expandedIds.has(order.id) ? <ChevronDownIcon /> : <ChevronRightIcon />}
-                                                            </Flex>
-                                                            <Text as="div" size="1" color="gray">{order.customer}</Text>
-                                                        </Box>
-                                                        <Box onClick={(e) => e.stopPropagation()}>
-                                                            <DropdownMenu.Root>
-                                                                <DropdownMenu.Trigger><IconButton variant="ghost" color="gray"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
-                                                                <DropdownMenu.Content>
-                                                                    <DropdownMenu.Item onClick={onNavigateToDetail}>
-                                                                        <EyeOpenIcon /> View Details
-                                                                    </DropdownMenu.Item>
-                                                                    <DropdownMenu.Item>
-                                                                        <Pencil1Icon /> Edit
-                                                                    </DropdownMenu.Item>
-                                                                    <DropdownMenu.Item>
-                                                                        <TrashIcon /> Delete
-                                                                    </DropdownMenu.Item>
-                                                                    <DropdownMenu.Item>
-                                                                        <EnvelopeClosedIcon /> Contact
-                                                                    </DropdownMenu.Item>
-                                                                </DropdownMenu.Content>
-                                                            </DropdownMenu.Root>
-                                                        </Box>
-                                                    </Flex>
-                                                    <Separator size="4" mb="3" />
-                                                    <Flex direction="column" gap="2">
-                                                        <Flex justify="between">
-                                                            <Text size="2" color="gray">Amount</Text>
-                                                            <Text size="2" weight="medium">{order.amount}</Text>
-                                                        </Flex>
-                                                        <Flex justify="between">
-                                                            <Text size="2" color="gray">Due Date</Text>
-                                                            <Text size="2">{order.date}</Text>
-                                                        </Flex>
-                                                        <Flex justify="between" align="center" mt="1">
-                                                            <Badge color={order.statusColor}>{order.status}</Badge>
-                                                            <Avatar fallback={order.avatar} size="1" radius="full" />
-                                                        </Flex>
-                                                    </Flex>
-
-                                                    {expandedIds.has(order.id) && (
-                                                        <Box pt="4" mt="4" style={{ borderTop: '1px solid var(--gray-4)' }} onClick={(e) => e.stopPropagation()}>
-                                                            <Flex direction="column" gap="4">
-                                                                <Flex align="center" gap="3">
-                                                                    <Avatar size="2" fallback={<PersonIcon />} radius="full" color="gray" variant="soft" />
-                                                                    <Box>
-                                                                        <Text as="div" size="2" weight="medium">Sarah Johnson</Text>
-                                                                        <Text as="div" size="1" color="gray">Project Manager</Text>
-                                                                    </Box>
-                                                                </Flex>
-
-                                                                <Grid columns="2" gap="4">
-                                                                    <Box>
-                                                                        <Text as="div" size="1" color="gray" weight="medium" style={{ textTransform: 'uppercase', marginBottom: '2px' }}>Location</Text>
-                                                                        <Flex align="center" gap="1">
-                                                                            <SewingPinIcon color="var(--gray-10)" width="12" height="12" />
-                                                                            <Text size="2">NY, USA</Text>
-                                                                        </Flex>
-                                                                    </Box>
-                                                                    <Box>
-                                                                        <Text as="div" size="1" color="gray" weight="medium" style={{ textTransform: 'uppercase', marginBottom: '2px' }}>Project ID</Text>
-                                                                        <Text size="2">PRJ-24-87</Text>
-                                                                    </Box>
-                                                                </Grid>
-
-                                                                <Box style={{ backgroundColor: 'var(--gray-3)', padding: '12px', borderRadius: '6px' }}>
-                                                                    {['Placed', 'Mfg', 'Qual', 'Ship'].map((step, i) => (
-                                                                        <Flex key={i} align="center" gap="2" mb="1">
-                                                                            <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: i <= 1 ? 'var(--gray-12)' : 'var(--gray-8)' }} />
-                                                                            <Text size="1" color={i <= 1 ? 'gray' : 'gray'}>{step}</Text>
-                                                                        </Flex>
-                                                                    ))}
-                                                                </Box>
-
-                                                                <Flex align="center" gap="2" p="2" style={{ border: '1px solid var(--gray-5)', borderRadius: '6px', backgroundColor: 'var(--color-panel-solid)' }}>
-                                                                    <RocketIcon width="12" height="12" color="var(--gray-10)" style={{ marginTop: '2px' }} />
-                                                                    <Box style={{ flex: 1 }}>
-                                                                        <Text as="div" size="1" weight="medium">Delay: Customs</Text>
-                                                                        <Text as="div" size="1" color="gray">+24h ETA</Text>
-                                                                    </Box>
-                                                                    <Button size="1" variant="soft" color="gray" style={{ height: '24px', fontSize: '10px' }} onClick={() => setTrackingOrder(order)}>Track</Button>
-                                                                </Flex>
-                                                            </Flex>
-                                                        </Box>
-                                                    )}
-                                                </Card>
-                                            ))}
-                                            {filteredOrders.length === 0 && (
-                                                <Box style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '24px', color: 'var(--gray-9)' }}>
-                                                    No orders found matching your criteria.
+                                            </>
+                                        ))}
+                                    </Table.Body>
+                                </Table.Root>
+                            ) : (
+                                <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4" p="4">
+                                    {filteredOrders.map((order) => (
+                                        <Card
+                                            key={order.id}
+                                            variant="surface"
+                                            style={{
+                                                cursor: 'pointer',
+                                                borderColor: expandedIds.has(order.id) ? 'var(--accent-9)' : undefined,
+                                                boxShadow: expandedIds.has(order.id) ? '0 0 0 1px var(--accent-9)' : undefined
+                                            }}
+                                            onClick={() => toggleExpand(order.id)}
+                                        >
+                                            <Flex justify="between" mb="3">
+                                                <Flex align="center" gap="3">
+                                                    <Avatar fallback={order.avatar} radius="full" size="2" color="indigo" variant="soft" />
+                                                    <Box>
+                                                        <Text as="div" weight="bold" size="2">{order.customer}</Text>
+                                                        <Text as="div" size="1" color="gray">{order.id}</Text>
+                                                    </Box>
+                                                </Flex>
+                                            </Flex>
+                                            <Flex direction="column" gap="2">
+                                                <Flex justify="between" style={{ borderBottom: '1px solid var(--gray-4)', paddingBottom: '4px' }}>
+                                                    <Text size="1" color="gray">Amount</Text>
+                                                    <Text size="2" weight="medium">{order.amount}</Text>
+                                                </Flex>
+                                                <Flex justify="between" style={{ borderBottom: '1px solid var(--gray-4)', paddingBottom: '4px' }}>
+                                                    <Text size="1" color="gray">Date</Text>
+                                                    <Text size="2">{order.date}</Text>
+                                                </Flex>
+                                                <Flex justify="between" pt="1">
+                                                    <Badge color={order.statusColor} radius="full">{order.status}</Badge>
+                                                </Flex>
+                                            </Flex>
+                                            {expandedIds.has(order.id) && (
+                                                <Box mt="3" pt="3" style={{ borderTop: '1px solid var(--gray-4)' }}>
+                                                    <Button size="1" variant="solid" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); setTrackingOrder(order); }}>Track Order</Button>
                                                 </Box>
                                             )}
-                                        </Grid>
-                                    )}
-                                </Card>
-                            </Box>
-
-                            {/* Metrics */}
-                            <Box style={{ gridColumn: 'span 3' }}>
-                                <Grid columns={{ initial: '1', md: '3' }} gap="4">
-                                    <Card>
-                                        <Flex justify="between" align="center">
-                                            <Box>
-                                                <Text as="div" size="2" color="gray">Total Revenue</Text>
-                                                <Text as="div" size="5" weight="bold">$2,847,500</Text>
-                                            </Box>
-                                            <RocketIcon color="gray" />
-                                        </Flex>
-                                    </Card>
-                                    <Card>
-                                        <Flex justify="between" align="center">
-                                            <Box>
-                                                <Text as="div" size="2" color="gray">Operational Costs</Text>
-                                                <Text as="div" size="5" weight="bold">$1,625,000</Text>
-                                            </Box>
-                                            <TargetIcon color="gray" />
-                                        </Flex>
-                                    </Card>
-                                    <Card>
-                                        <Flex justify="between" align="center">
-                                            <Box>
-                                                <Text as="div" size="2" color="gray">Net Profit</Text>
-                                                <Text as="div" size="5" weight="bold">$1,222,500</Text>
-                                            </Box>
-                                            <PersonIcon color="gray" />
-                                        </Flex>
-                                    </Card>
+                                        </Card>
+                                    ))}
                                 </Grid>
-                            </Box>
+                            )}
+                        </Card>
+                    </Box>
 
-                            {/* Charts */}
-                            <Box style={{ gridColumn: 'span 2' }}>
-                                <Card size="3">
-                                    <Heading size="3" mb="4">Inventory Turnover by Category</Heading>
-                                    <div style={{ width: '100%', height: 300 }}>
-                                        <ResponsiveContainer>
-                                            <BarChart data={inventoryData}>
-                                                <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-                                                <RechartsTooltip />
-                                                <Bar dataKey="value" fill="var(--gray-12)" radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </Card>
+                    {/* Charts */}
+                    <Box style={{ gridColumn: 'span 2' }}>
+                        <Card size="3" style={{ borderRadius: '16px' }}>
+                            <Heading size="3" mb="4">Revenue Trend</Heading>
+                            <Box height="300px">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={salesData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-6)" vertical={false} />
+                                        <XAxis dataKey="name" stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                                        <RechartsTooltip
+                                            contentStyle={{ backgroundColor: 'var(--color-panel-solid)', borderColor: 'var(--gray-6)', borderRadius: '8px', color: 'var(--gray-12)' }}
+                                            itemStyle={{ color: 'var(--gray-12)' }}
+                                        />
+                                        <Line type="monotone" dataKey="sales" stroke="var(--accent-9)" strokeWidth={3} dot={{ r: 4, fill: 'var(--color-panel-solid)', strokeWidth: 2 }} />
+                                        <Line type="monotone" dataKey="costs" stroke="var(--gray-8)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             </Box>
+                        </Card>
+                    </Box>
 
-                            <Box style={{ gridColumn: 'span 1' }}>
-                                <Card size="3">
-                                    <Heading size="3" mb="4">Sales vs Costs</Heading>
-                                    <div style={{ width: '100%', height: 300 }}>
-                                        <ResponsiveContainer>
-                                            <LineChart data={salesData}>
-                                                <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                                <RechartsTooltip />
-                                                <Line type="monotone" dataKey="sales" stroke="var(--accent-9)" strokeWidth={2} dot={false} />
-                                                <Line type="monotone" dataKey="costs" stroke="var(--gray-9)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </Card>
+                    <Box style={{ gridColumn: 'span 1' }}>
+                        <Card size="3" style={{ borderRadius: '16px' }}>
+                            <Heading size="3" mb="4">Inventory Breakdown</Heading>
+                            <Box height="300px">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={inventoryData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-6)" vertical={false} />
+                                        <XAxis dataKey="name" stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} />
+                                        {/* <YAxis stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} /> */}
+                                        <RechartsTooltip cursor={{ fill: 'transparent' }} contentStyle={{ backgroundColor: 'var(--color-panel-solid)', borderColor: 'var(--gray-6)', borderRadius: '8px', color: 'var(--gray-12)' }} />
+                                        <Bar dataKey="value" fill="var(--indigo-9)" radius={[4, 4, 0, 0]} barSize={40} />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </Box>
+                        </Card>
+                    </Box>
+                </Grid>
+            </Box>
 
-                        </Grid>
-                    </Flex>
-                </Box>
-            </Flex>
+            {/* Modal - Track Order */}
             <Dialog.Root open={!!trackingOrder} onOpenChange={(open) => !open && setTrackingOrder(null)}>
-                <Dialog.Content style={{ maxWidth: 700 }}>
+                <Dialog.Content style={{ maxWidth: 700, borderRadius: '16px' }}>
                     <Dialog.Title>
                         <Flex justify="between" align="center">
                             <Text>Tracking Details - {trackingOrder?.id}</Text>
@@ -664,7 +511,7 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                                     width: '9px',
                                                     height: '9px',
                                                     borderRadius: '50%',
-                                                    backgroundColor: step.completed ? 'var(--gray-12)' : 'var(--gray-6)',
+                                                    backgroundColor: step.completed ? (appearance === 'dark' ? 'white' : 'black') : 'var(--gray-6)',
                                                     border: '2px solid var(--color-bg)',
                                                     boxSizing: 'content-box',
                                                     ...(step.alert ? { backgroundColor: 'var(--ruby-9)' } : {})
@@ -681,14 +528,12 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                         {/* Right Col: Georeference & Actions */}
                         <Flex direction="column" gap="4">
                             <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase', display: 'block' }}>Delivery Location</Text>
-
-                            {/* Map Placeholder */}
                             <Flex
                                 align="center"
                                 justify="center"
                                 style={{
                                     backgroundColor: 'var(--gray-3)',
-                                    borderRadius: '6px',
+                                    borderRadius: '12px',
                                     height: '160px',
                                     border: '1px solid var(--gray-6)'
                                 }}
@@ -699,7 +544,7 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                 </Box>
                             </Flex>
 
-                            <Box style={{ backgroundColor: 'var(--gray-3)', padding: '12px', borderRadius: '6px', border: '1px solid var(--gray-6)' }}>
+                            <Box style={{ backgroundColor: 'var(--gray-3)', padding: '12px', borderRadius: '12px', border: '1px solid var(--gray-6)' }}>
                                 <Text as="div" size="2" weight="medium">Distribution Center NY-05</Text>
                                 <Text as="div" size="1" color="gray">45 Industrial Park Dr, Brooklyn, NY 11201</Text>
                             </Box>
@@ -714,5 +559,54 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                 </Dialog.Content>
             </Dialog.Root>
         </Flex>
+    )
+}
+
+function NavItem({ icon, label, active }: { icon: any, label: string, active?: boolean }) {
+    return (
+        <Button
+            className={`nav-item ${active ? 'active' : ''}`}
+            variant="ghost"
+            color={active ? 'indigo' : 'gray'}
+            radius="full"
+            style={{
+                height: '40px',
+                padding: '0 12px',
+                backgroundColor: active ? 'var(--accent-a3)' : 'transparent',
+                transition: 'all 0.3s ease'
+            }}
+        >
+            <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {icon}
+            </Box>
+            <span className="nav-item-label" style={{ fontSize: '14px', fontWeight: 500 }}>{label}</span>
+        </Button>
+    )
+}
+
+// KPI Card Component
+function KPICard({ title, value, trend, trendUp, trendAlert, icon }: any) {
+    return (
+        <Card size="2" style={{ borderRadius: '16px' }}>
+            <Flex justify="between" align="start">
+                <Box>
+                    <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase' }}>{title}</Text>
+                    <Text size="6" weight="regular" style={{ marginTop: '4px' }}>{value}</Text>
+                </Box>
+                <Box style={{ padding: '8px', borderRadius: '8px', backgroundColor: 'var(--gray-3)', color: 'var(--gray-11)' }}>
+                    {icon}
+                </Box>
+            </Flex>
+            <Flex align="center" gap="1" mt="3">
+                {trendAlert ? (
+                    <Text size="1" color="red" weight="medium">{trend}</Text>
+                ) : (
+                    <>
+                        {trendUp ? <RocketIcon style={{ transform: 'rotate(0deg)', color: 'var(--teal-9)' }} width="12" /> : <Text size="1" color="gray">-</Text>}
+                        <Text size="1" color={trendUp ? 'teal' : 'gray'} weight="medium">{trend}</Text>
+                    </>
+                )}
+            </Flex>
+        </Card>
     )
 }
