@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
 import { Button, Card, Flex, Grid, Heading, Text, TextField, Avatar, Badge, Table, IconButton, Separator, Box, Popover, Checkbox, DropdownMenu, Dialog } from '@radix-ui/themes'
-import { MagnifyingGlassIcon, BellIcon, CalendarIcon, PlusIcon, CopyIcon, FileTextIcon, PaperPlaneIcon, ReaderIcon, DotsHorizontalIcon, ArrowRightIcon, PersonIcon, TargetIcon, RocketIcon, ViewGridIcon, ListBulletIcon, SunIcon, MoonIcon, ExitIcon, ChevronDownIcon, ChevronRightIcon, EyeOpenIcon, Pencil1Icon, TrashIcon, EnvelopeClosedIcon, CheckCircledIcon, ClockIcon, SewingPinIcon, Cross2Icon, HomeIcon, CubeIcon, BarChartIcon, ClipboardIcon } from '@radix-ui/react-icons'
+import { MagnifyingGlassIcon, BellIcon, CalendarIcon, PlusIcon, CopyIcon, FileTextIcon, PaperPlaneIcon, ReaderIcon, ArrowRightIcon, PersonIcon, TargetIcon, RocketIcon, ViewGridIcon, ListBulletIcon, SunIcon, MoonIcon, ExitIcon, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, EyeOpenIcon, Pencil1Icon, TrashIcon, EnvelopeClosedIcon, CheckCircledIcon, ClockIcon, SewingPinIcon, Cross2Icon, HomeIcon, CubeIcon, BarChartIcon, ClipboardIcon, DotsHorizontalIcon, QuestionMarkCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts'
 import { useTheme } from './ThemeContext';
 
 function ThemeToggle() {
     const { appearance, toggleTheme } = useTheme();
     return (
-        <IconButton variant="ghost" color="gray" onClick={toggleTheme} style={{ borderRadius: '9999px' }}>
+        <IconButton variant="ghost" color="gray" onClick={toggleTheme} style={{ width: '32px', height: '32px', borderRadius: '9999px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {appearance === 'dark' ? <SunIcon width="18" height="18" /> : <MoonIcon width="18" height="18" />}
         </IconButton>
     )
@@ -42,13 +42,15 @@ const trackingSteps = [
 ]
 
 export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: () => void, onNavigateToDetail: () => void }) {
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const { appearance } = useTheme();
 
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
-    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
     const [trackingOrder, setTrackingOrder] = useState<any>(null)
+    const [showMetrics, setShowMetrics] = useState(false)
+    const [isAppsOpen, setIsAppsOpen] = useState(false)
 
     const toggleExpand = (id: string) => {
         const newExpanded = new Set(expandedIds)
@@ -74,9 +76,9 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
             <style>{`
                 .nav-glass {
                     background-color: var(--color-panel-translucent);
-                    backdrop-filter: blur(12px);
-                    border: 1px solid var(--gray-a4);
-                    box-shadow: 0 4px 20px -5px rgba(0,0,0,0.1);
+                    backdrop-filter: blur(24px);
+                    border: 1px solid var(--gray-a3);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                 }
                 .nav-item-label {
                     max-width: 0;
@@ -89,7 +91,6 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                 .nav-item:hover .nav-item-label, .nav-item.active .nav-item-label {
                     max-width: 100px;
                     opacity: 1;
-                    margin-left: 8px;
                 }
             `}</style>
 
@@ -102,12 +103,14 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                     transform: 'translateX(-50%)',
                     zIndex: 100,
                     borderRadius: '9999px',
+                    width: 'max-content',
+                    maxWidth: '90vw',
                 }}
                 className="nav-glass"
             >
-                <Flex align="center" gap="2" p="2" style={{ paddingLeft: '16px', paddingRight: '8px' }}>
+                <Flex align="center" gap="2" p="2">
                     {/* Logo */}
-                    <Box pr="2">
+                    <Box px="4">
                         <style>{`
                             .dashboard-logo-light { display: block; }
                             .dashboard-logo-dark { display: none; }
@@ -118,24 +121,87 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                         <img className="dashboard-logo-dark" src="/logo-on-dark.jpg" alt="Strata" style={{ height: '20px', width: 'auto' }} />
                     </Box>
 
-                    <Separator orientation="vertical" size="2" style={{ height: '24px' }} />
+                    <Separator orientation="vertical" size="2" style={{ height: '24px', margin: '0 4px' }} />
 
                     {/* Nav Items */}
                     <Flex gap="1">
-                        <NavItem icon={<HomeIcon />} label="Overview" active />
-                        <NavItem icon={<CubeIcon />} label="Inventory" />
-                        <NavItem icon={<BarChartIcon />} label="Production" />
-                        <NavItem icon={<ClipboardIcon />} label="Orders" />
+                        <NavItem icon={<HomeIcon width="16" height="16" />} label="Overview" active />
+                        <NavItem icon={<CubeIcon width="16" height="16" />} label="Inventory" />
+                        <NavItem icon={<BarChartIcon width="16" height="16" />} label="Production" />
+                        <NavItem icon={<ClipboardIcon width="16" height="16" />} label="Orders" />
                     </Flex>
 
-                    <Separator orientation="vertical" size="2" style={{ height: '24px' }} />
+                    <Separator orientation="vertical" size="2" style={{ height: '24px', margin: '0 4px' }} />
 
                     {/* Tools */}
-                    <Flex gap="2" align="center">
+                    <Flex gap="2" align="center" style={{ position: 'relative', paddingRight: '8px' }}>
+                        <IconButton
+                            variant="ghost"
+                            color="gray"
+                            radius="full"
+                            style={{ width: '32px', height: '32px' }}
+                            onClick={() => setIsAppsOpen(!isAppsOpen)}
+                        >
+                            <ViewGridIcon width="18" height="18" />
+                        </IconButton>
+
+                        {isAppsOpen && (
+                            <>
+                                <div
+                                    style={{
+                                        position: 'fixed', inset: 0, zIndex: 99, backgroundColor: 'transparent'
+                                    }}
+                                    onClick={() => setIsAppsOpen(false)}
+                                />
+                                <style>{`
+                                    :root { --apps-menu-bg: rgba(255, 255, 255, 0.85); }
+                                    .dark, [data-theme='dark'] { --apps-menu-bg: rgba(23, 25, 35, 0.85); }
+                                `}</style>
+                                <div
+                                    style={{
+                                        position: 'fixed',
+                                        top: '90px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        width: '400px',
+                                        padding: 0,
+                                        overflow: 'hidden',
+                                        backgroundColor: 'var(--apps-menu-bg)',
+                                        backdropFilter: 'blur(24px)',
+                                        WebkitBackdropFilter: 'blur(24px)',
+                                        borderRadius: '24px',
+                                        border: '1px solid var(--gray-a4)',
+                                        zIndex: 100,
+                                        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)'
+                                    }}
+                                >
+                                    <Grid columns="3" gap="3" p="4">
+                                        {[
+                                            { icon: <HomeIcon width="24" height="24" />, label: "Portal", color: "var(--blue-9)", bg: "var(--blue-3)" },
+                                            { icon: <PersonIcon width="24" height="24" />, label: "CRM", color: "var(--plum-9)", bg: "var(--plum-3)" },
+                                            { icon: <FileTextIcon width="24" height="24" />, label: "Invoice", color: "var(--green-9)", bg: "var(--green-3)" },
+                                            { icon: <CubeIcon width="24" height="24" />, label: "Inventory", color: "var(--orange-9)", bg: "var(--orange-3)" },
+                                            { icon: <BarChartIcon width="24" height="24" />, label: "Analytics", color: "var(--pink-9)", bg: "var(--pink-3)" },
+                                            { icon: <CheckCircledIcon width="24" height="24" />, label: "Support", color: "var(--cyan-9)", bg: "var(--cyan-3)" },
+                                            { icon: <ViewGridIcon width="24" height="24" />, label: "Board", color: "var(--indigo-9)", bg: "var(--indigo-3)" },
+                                            { icon: <CalendarIcon width="24" height="24" />, label: "Calendar", color: "var(--tomato-9)", bg: "var(--tomato-3)" },
+                                            { icon: <DotsHorizontalIcon width="24" height="24" />, label: "More", color: "var(--slate-9)", bg: "var(--slate-3)" },
+                                        ].map((app, i) => (
+                                            <Flex key={i} direction="column" align="center" gap="3" p="3" style={{ cursor: 'pointer', borderRadius: '16px', transition: 'all 0.2s' }} className="hover-bg hover-scale">
+                                                <Flex justify="center" align="center" style={{ width: '48px', height: '48px', borderRadius: '16px', backgroundColor: app.bg, color: app.color, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+                                                    {app.icon}
+                                                </Flex>
+                                                <Text size="2" weight="medium" color="gray">{app.label}</Text>
+                                            </Flex>
+                                        ))}
+                                    </Grid>
+                                </div>
+                            </>
+                        )}
                         <ThemeToggle />
                         <DropdownMenu.Root>
                             <DropdownMenu.Trigger>
-                                <Button variant="ghost" radius="full" style={{ padding: '0 4px', height: '32px' }}>
+                                <Button variant="ghost" radius="full" style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <Avatar fallback="JD" size="1" radius="full" color="indigo" variant="soft" />
                                 </Button>
                             </DropdownMenu.Trigger>
@@ -152,16 +218,19 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                         </DropdownMenu.Root>
                     </Flex>
                 </Flex>
-            </Box>
+            </Box >
 
             {/* Main Content Area */}
-            <Box style={{ paddingTop: '100px', paddingBottom: '40px', paddingInline: '32px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+            < Box style={{ paddingTop: '100px', paddingBottom: '40px', paddingInline: '32px', maxWidth: '1400px', margin: '0 auto', width: '100%' }
+            }>
                 {/* Header Section */}
-                <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align={{ initial: 'start', sm: 'center' }} gap="4" mb="8">
+                < Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align={{ initial: 'start', sm: 'center' }} gap="4" mb="8" >
                     <Box>
-                        <Heading size="6" weight="medium" style={{ background: 'linear-gradient(to right, var(--gray-12), var(--gray-10))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                            Operational Overview
-                        </Heading>
+                        <Flex align="center" gap="2">
+                            <Heading size="6" weight="medium" style={{ background: 'linear-gradient(to right, var(--gray-12), var(--gray-10))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                Operational Overview
+                            </Heading>
+                        </Flex>
                         <Text size="2" color="gray" mt="1">Jan 1 - Jan 31, 2025</Text>
                     </Box>
                     <Flex gap="3" align="center">
@@ -172,64 +241,102 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                             <BellIcon width="18" height="18" />
                         </IconButton>
                     </Flex>
-                </Flex>
+                </Flex >
 
                 {/* KPI Cards */}
-                <Grid columns={{ initial: '1', sm: '2', lg: '4' }} gap="5" mb="8">
-                    <KPICard title="Total Inventory" value="$1.2M" trend="+0.2% vs last month" trendUp icon={<CubeIcon />} />
-                    <KPICard title="Efficiency" value="88%" trend="+3.5% vs last month" trendUp icon={<BarChartIcon />} />
-                    <KPICard title="Pending Orders" value="142" trend="-12 vs yesterday" icon={<ClipboardIcon />} />
-                    <KPICard title="Low Stock" value="15" trend="Requires attention" trendAlert icon={<TargetIcon />} />
-                </Grid>
-
-                {/* Quick Actions */}
-                <Box mb="8" style={{ overflowX: 'auto' }}>
-                    <Flex align="center" gap="6" style={{ minWidth: 'max-content' }}>
-                        <Text size="3" weight="medium" color="gray">Quick Actions</Text>
-                        <Flex gap="4">
-                            {[
-                                { icon: <PlusIcon width="18" height="18" />, label: "New Order" },
-                                { icon: <CopyIcon width="18" height="18" />, label: "Duplicate" },
-                                { icon: <FileTextIcon width="18" height="18" />, label: "Export PDF" },
-                                { icon: <PaperPlaneIcon width="18" height="18" />, label: "Send Email" },
-                                { icon: <ReaderIcon width="18" height="18" />, label: "Templates" },
-                            ].map((action, i) => (
-                                <Flex key={i} direction="column" align="center" gap="2" style={{ cursor: 'pointer' }} className="group">
-                                    <Flex
-                                        align="center" justify="center"
-                                        style={{
-                                            width: '48px', height: '48px',
-                                            borderRadius: '50%',
-                                            backgroundColor: 'var(--color-panel-solid)',
-                                            border: '1px dashed var(--gray-8)',
-                                            color: 'var(--gray-11)',
-                                            transition: 'all 0.2s ease',
-                                        }}
-                                        className="action-icon"
-                                    >
+                {/* KPI Cards */}
+                {/* KPI Cards */}
+                {
+                    showMetrics ? (
+                        <>
+                            <Flex justify="end" mb="2">
+                                <Button variant="ghost" color="gray" size="1" onClick={() => setShowMetrics(false)}>
+                                    Hide Details <ChevronUpIcon />
+                                </Button>
+                            </Flex>
+                            <Grid columns={{ initial: '1', sm: '2', lg: '4' }} gap="5" mb="8">
+                                <KPICard title="Total Inventory" value="$1.2M" trend="+0.2% vs last month" trendUp icon={<CubeIcon />} />
+                                <KPICard title="Efficiency" value="88%" trend="+3.5% vs last month" trendUp icon={<BarChartIcon />} />
+                                <KPICard title="Pending Orders" value="142" trend="-12 vs yesterday" icon={<ClipboardIcon />} />
+                                <KPICard title="Low Stock" value="15" trend="Requires attention" trendAlert icon={<TargetIcon />} />
+                            </Grid>
+                            {/* Quick Actions below grid when expanded */}
+                            <Flex gap="4" mb="8" align="center">
+                                <Text size="2" weight="medium" color="gray">Quick Actions:</Text>
+                                {[
+                                    { icon: <PlusIcon width="16" height="16" />, label: "New Order" },
+                                    { icon: <CopyIcon width="16" height="16" />, label: "Duplicate" },
+                                    { icon: <FileTextIcon width="16" height="16" />, label: "Export PDF" },
+                                    { icon: <PaperPlaneIcon width="16" height="16" />, label: "Send Email" },
+                                ].map((action, i) => (
+                                    <Button key={i} variant="outline" size="1" style={{ borderRadius: '999px' }}>
                                         {action.icon}
+                                        {action.label}
+                                    </Button>
+                                ))}
+                            </Flex>
+                        </>
+                    ) : (
+                        <Card mb="8" style={{ padding: '16px' }}>
+                            <Flex justify="between" align="center" gap="4" direction={{ initial: 'column', sm: 'row' }}>
+                                <Flex align="center" gap="6" style={{ overflowX: 'auto', width: '100%', scrollbarWidth: 'none' }}>
+                                    <Flex align="center" gap="2" style={{ minWidth: 'max-content' }}>
+                                        <Text size="2" color="gray">Inventory:</Text>
+                                        <Text size="3" weight="bold">$1.2M</Text>
+                                        <Badge color="green" radius="full">+0.2%</Badge>
                                     </Flex>
-                                    <Text size="1" weight="medium" color="gray" style={{ transition: 'color 0.2s ease' }}>{action.label}</Text>
-                                    <style>{`
-                                        .group:hover .action-icon {
-                                            border-color: var(--accent-9);
-                                            background-color: var(--accent-3);
-                                            color: var(--accent-9);
-                                        }
-                                        .group:hover span {
-                                            color: var(--gray-12);
-                                        }
-                                    `}</style>
+                                    <Separator orientation="vertical" style={{ height: '32px', display: 'block' }} />
+                                    <Flex align="center" gap="2" style={{ minWidth: 'max-content' }}>
+                                        <Text size="2" color="gray">Efficiency:</Text>
+                                        <Text size="3" weight="bold">88%</Text>
+                                        <Badge color="green" radius="full">+3.5%</Badge>
+                                    </Flex>
+                                    <Separator orientation="vertical" style={{ height: '32px', display: 'block' }} />
+                                    <Flex align="center" gap="2" style={{ minWidth: 'max-content' }}>
+                                        <Text size="2" color="gray">Pending:</Text>
+                                        <Text size="3" weight="bold">142</Text>
+                                    </Flex>
+                                    <Separator orientation="vertical" style={{ height: '32px', display: 'block' }} />
+                                    <Flex align="center" gap="2" style={{ minWidth: 'max-content' }}>
+                                        <Text size="2" color="gray">Low Stock:</Text>
+                                        <Text size="3" weight="bold">15</Text>
+                                        <Badge color="red" radius="full">Alert</Badge>
+                                    </Flex>
                                 </Flex>
-                            ))}
-                        </Flex>
-                    </Flex>
-                </Box>
+
+                                <Separator orientation="vertical" style={{ height: '48px', display: 'none' }} className="xl:block mx-2" />
+
+                                <Flex align="center" gap="3" style={{ minWidth: 'max-content' }}>
+                                    {/* Quick Actions Integrated */}
+                                    <Flex gap="3" align="center">
+                                        {[
+                                            { icon: <PlusIcon width="16" height="16" />, label: "New" },
+                                            { icon: <CopyIcon width="16" height="16" />, label: "Copy" },
+                                            { icon: <PaperPlaneIcon width="16" height="16" />, label: "Email" },
+                                        ].map((action, i) => (
+                                            <Button key={i} variant="ghost" color="gray" size="1">
+                                                {action.icon}
+                                                {action.label}
+                                            </Button>
+                                        ))}
+                                    </Flex>
+                                    <Separator orientation="vertical" style={{ height: '48px', display: 'block' }} />
+                                    <IconButton variant="ghost" color="gray" size="1" onClick={() => setShowMetrics(true)}>
+                                        <ChevronDownIcon />
+                                    </IconButton>
+                                </Flex>
+                            </Flex>
+                        </Card >
+                    )
+                }
+
+
+
 
                 {/* Main Content Grid */}
-                <Grid columns={{ initial: '1', lg: '3' }} gap="6">
+                < Grid columns={{ initial: '1', lg: '3' }} gap="6" >
                     {/* Orders Table */}
-                    <Box style={{ gridColumn: 'span 3' }}>
+                    < Box style={{ gridColumn: 'span 3' }}>
                         <Card size="3" style={{ borderRadius: '16px' }}>
                             <Flex justify="between" align="center" mb="5">
                                 <Flex align="center" gap="3">
@@ -321,7 +428,7 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                                     </Table.Cell>
                                                     <Table.Cell>{order.amount}</Table.Cell>
                                                     <Table.Cell><Badge color={order.statusColor} variant="soft" radius="full">{order.status}</Badge></Table.Cell>
-                                                    <Table.Cell color="gray">{order.date}</Table.Cell>
+                                                    <Table.Cell><Text color="gray">{order.date}</Text></Table.Cell>
                                                     <Table.Cell align="right" onClick={(e) => e.stopPropagation()}>
                                                         <DropdownMenu.Root>
                                                             <DropdownMenu.Trigger><IconButton variant="ghost" color="gray" size="1"><DotsHorizontalIcon /></IconButton></DropdownMenu.Trigger>
@@ -414,6 +521,25 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                                         <Text as="div" size="1" color="gray">{order.id}</Text>
                                                     </Box>
                                                 </Flex>
+                                                <Box onClick={(e) => e.stopPropagation()}>
+                                                    <Flex gap="1">
+                                                        <IconButton variant="ghost" color="gray" size="1" onClick={onNavigateToDetail}>
+                                                            <EyeOpenIcon />
+                                                        </IconButton>
+                                                        <IconButton variant="ghost" color="gray" size="1">
+                                                            <Pencil1Icon />
+                                                        </IconButton>
+                                                        <DropdownMenu.Root>
+                                                            <DropdownMenu.Trigger>
+                                                                <IconButton variant="ghost" color="gray" size="1"><DotsHorizontalIcon /></IconButton>
+                                                            </DropdownMenu.Trigger>
+                                                            <DropdownMenu.Content>
+                                                                <DropdownMenu.Item><TrashIcon /> Delete</DropdownMenu.Item>
+                                                                <DropdownMenu.Item><EnvelopeClosedIcon /> Contact</DropdownMenu.Item>
+                                                            </DropdownMenu.Content>
+                                                        </DropdownMenu.Root>
+                                                    </Flex>
+                                                </Box>
                                             </Flex>
                                             <Flex direction="column" gap="2">
                                                 <Flex justify="between" style={{ borderBottom: '1px solid var(--gray-4)', paddingBottom: '4px' }}>
@@ -430,7 +556,42 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                             </Flex>
                                             {expandedIds.has(order.id) && (
                                                 <Box mt="3" pt="3" style={{ borderTop: '1px solid var(--gray-4)' }}>
-                                                    <Button size="1" variant="solid" style={{ width: '100%' }} onClick={(e) => { e.stopPropagation(); setTrackingOrder(order); }}>Track Order</Button>
+                                                    <Flex direction="column" gap="4">
+                                                        <Flex align="center" gap="3">
+                                                            <Avatar fallback={<PersonIcon />} radius="full" size="2" color="gray" variant="soft" />
+                                                            <Box>
+                                                                <Text as="div" size="2" weight="bold">Sarah Johnson</Text>
+                                                                <Text as="div" size="1" color="gray">Project Manager</Text>
+                                                            </Box>
+                                                        </Flex>
+
+                                                        <Separator size="4" />
+
+                                                        <Box style={{ position: 'relative', paddingBlock: '8px' }}>
+                                                            <Box style={{ position: 'absolute', top: '12px', left: 0, right: 0, height: '2px', backgroundColor: 'var(--gray-4)', zIndex: 0 }} />
+                                                            <Flex justify="between" style={{ position: 'relative', zIndex: 1 }}>
+                                                                {['Placed', 'Mfg', 'Qual', 'Ship'].map((step, i) => (
+                                                                    <Flex key={i} direction="column" align="center" style={{ backgroundColor: 'var(--color-panel-solid)', paddingInline: '4px' }}>
+                                                                        <Flex align="center" justify="center" style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: i <= 1 ? 'var(--blue-9)' : 'var(--gray-5)', color: 'white' }}>
+                                                                            {i < 1 ? <CheckCircledIcon width="16" height="16" /> : <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'white' }} />}
+                                                                        </Flex>
+                                                                        <Text size="1" color={i <= 1 ? 'indigo' : 'gray'} mt="1" weight="medium">{step}</Text>
+                                                                    </Flex>
+                                                                ))}
+                                                            </Flex>
+                                                        </Box>
+
+                                                        <Card style={{ backgroundColor: 'var(--orange-3)', borderColor: 'var(--orange-6)' }}>
+                                                            <Flex gap="3" align="start">
+                                                                <Box style={{ color: 'var(--orange-9)' }}><QuestionMarkCircledIcon width="20" height="20" /></Box>
+                                                                <Box>
+                                                                    <Text as="div" size="2" weight="bold" style={{ color: 'var(--orange-9)' }}>Alert: Customs Delay</Text>
+                                                                    <Text as="div" size="1" color="gray">Held at port. ETA +24h.</Text>
+                                                                    <Text as="div" size="1" weight="medium" style={{ color: 'var(--blue-9)', cursor: 'pointer', marginTop: '4px' }} onClick={(e) => { e.stopPropagation(); setTrackingOrder(order); }}>Track Shipment</Text>
+                                                                </Box>
+                                                            </Flex>
+                                                        </Card>
+                                                    </Flex>
                                                 </Box>
                                             )}
                                         </Card>
@@ -438,10 +599,10 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                 </Grid>
                             )}
                         </Card>
-                    </Box>
+                    </Box >
 
                     {/* Charts */}
-                    <Box style={{ gridColumn: 'span 2' }}>
+                    < Box style={{ gridColumn: 'span 2' }}>
                         <Card size="3" style={{ borderRadius: '16px' }}>
                             <Heading size="3" mb="4">Revenue Trend</Heading>
                             <Box height="300px">
@@ -460,7 +621,7 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                 </ResponsiveContainer>
                             </Box>
                         </Card>
-                    </Box>
+                    </Box >
 
                     <Box style={{ gridColumn: 'span 1' }}>
                         <Card size="3" style={{ borderRadius: '16px' }}>
@@ -478,11 +639,11 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                             </Box>
                         </Card>
                     </Box>
-                </Grid>
-            </Box>
+                </Grid >
+            </Box >
 
             {/* Modal - Track Order */}
-            <Dialog.Root open={!!trackingOrder} onOpenChange={(open) => !open && setTrackingOrder(null)}>
+            < Dialog.Root open={!!trackingOrder} onOpenChange={(open) => !open && setTrackingOrder(null)}>
                 <Dialog.Content style={{ maxWidth: 700, borderRadius: '16px' }}>
                     <Dialog.Title>
                         <Flex justify="between" align="center">
@@ -557,8 +718,8 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                         </Flex>
                     </Grid>
                 </Dialog.Content>
-            </Dialog.Root>
-        </Flex>
+            </Dialog.Root >
+        </Flex >
     )
 }
 
@@ -570,10 +731,13 @@ function NavItem({ icon, label, active }: { icon: any, label: string, active?: b
             color={active ? 'indigo' : 'gray'}
             radius="full"
             style={{
-                height: '40px',
-                padding: '0 12px',
+                height: '36px',
+                padding: '0 16px',
                 backgroundColor: active ? 'var(--accent-a3)' : 'transparent',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
             }}
         >
             <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

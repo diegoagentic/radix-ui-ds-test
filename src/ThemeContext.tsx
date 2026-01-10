@@ -29,7 +29,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
         <ThemeContext.Provider value={{ appearance, toggleTheme }}>
-            <Theme appearance={appearance}>
+            <Theme appearance={appearance} scaling="100%">
                 {children}
             </Theme>
         </ThemeContext.Provider>
