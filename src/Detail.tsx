@@ -1,21 +1,32 @@
-import { Button, Card, Flex, Grid, Heading, Text, TextField, Badge, Table, IconButton, Separator, Box, Checkbox, Dialog } from '@radix-ui/themes'
+import { Button, Card, Flex, Grid, Heading, Text, TextField, Badge, Table, IconButton, Separator, Box, Checkbox, Dialog, DropdownMenu, Avatar, RadioGroup } from '@radix-ui/themes'
 import {
     MagnifyingGlassIcon,
     ChevronDownIcon,
+    ChevronUpIcon,
     ChevronRightIcon,
     Share1Icon,
     DownloadIcon,
     PlusIcon,
-    CopyIcon,
     FileTextIcon,
     PaperPlaneIcon,
     CheckCircledIcon,
-    Cross2Icon,
     InfoCircledIcon,
     ExclamationTriangleIcon,
     ComponentPlaceholderIcon,
     SunIcon,
-    MoonIcon
+    MoonIcon,
+    HomeIcon,
+    CubeIcon,
+    BarChartIcon,
+    ClipboardIcon,
+    ViewGridIcon,
+    PersonIcon,
+    CalendarIcon,
+    DotsHorizontalIcon,
+    ExitIcon,
+    MagicWandIcon,
+    UpdateIcon,
+    Pencil1Icon
 } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import * as Progress from '@radix-ui/react-progress'
@@ -31,9 +42,9 @@ function ThemeToggle() {
 }
 
 const items = [
-    { id: "SKU-OFF-2025-001", name: "Executive Chair Pro", category: "Premium Series", properties: "Leather / Black", stock: 285, status: "In Stock" as const, statusColor: 'gray' as const },
+    { id: "SKU-OFF-2025-001", name: "Executive Chair Pro", category: "Premium Series", properties: "Leather / Black", stock: 285, status: "In Stock" as const, statusColor: 'gray' as const, aiStatus: 'info' },
     { id: "SKU-OFF-2025-002", name: "Ergonomic Task Chair", category: "Standard Series", properties: "Mesh / Gray", stock: 520, status: "In Stock" as const, statusColor: 'gray' as const },
-    { id: "SKU-OFF-2025-003", name: "Conference Room Chair", category: "Meeting Series", properties: "Fabric / Navy", stock: 42, status: "Low Stock" as const, statusColor: 'orange' as const },
+    { id: "SKU-OFF-2025-003", name: "Conference Room Chair", category: "Meeting Series", properties: "Fabric / Navy", stock: 42, status: "Low Stock" as const, statusColor: 'orange' as const, aiStatus: 'warning' },
     { id: "SKU-OFF-2025-004", name: "Visitor Stacking Chair", category: "Guest Series", properties: "Plastic / White", stock: 180, status: "In Stock" as const, statusColor: 'gray' as const },
     { id: "SKU-OFF-2025-005", name: "Gaming Office Chair", category: "Sport Series", properties: "Leather / Red", stock: 0, status: "Out of Stock" as const, statusColor: 'red' as const },
     { id: "SKU-OFF-2025-006", name: "Reception Lounge Chair", category: "Lobby Series", properties: "Velvet / Teal", stock: 95, status: "In Stock" as const, statusColor: 'gray' as const },
@@ -46,17 +57,176 @@ export default function Detail({ onBack }: { onBack: () => void }) {
     const [sections, setSections] = useState({
         quickActions: true,
         productOverview: true,
-        lifecycle: true
+        lifecycle: true,
+        aiSuggestions: true
     })
+    const [isAiOpen, setIsAiOpen] = useState(false)
+    const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false)
+    const [isSummaryExpanded, setIsSummaryExpanded] = useState(false)
+    const [isPOModalOpen, setIsPOModalOpen] = useState(false)
+    const [isManualFixMode, setIsManualFixMode] = useState(false)
+    const [resolutionMethod, setResolutionMethod] = useState<'local' | 'remote' | 'custom'>('remote')
+    const [customValue, setCustomValue] = useState('')
 
     const toggleSection = (key: keyof typeof sections) => {
         setSections(prev => ({ ...prev, [key]: !prev[key] }))
     }
 
+    const [isAppsOpen, setIsAppsOpen] = useState(false)
+    const onLogout = () => { console.log('Logout') }
+
     return (
         <Flex direction="column" style={{ minHeight: '100vh', backgroundColor: 'var(--gray-2)' }}>
-            {/* Header */}
-            <Flex align="center" justify="between" px="5" style={{ height: '64px', backgroundColor: 'var(--color-panel-solid)', borderBottom: '1px solid var(--gray-5)' }}>
+            <style>{`
+                .nav-glass {
+                    background-color: var(--color-panel-translucent);
+                    backdrop-filter: blur(24px);
+                    border: 1px solid var(--gray-a3);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                }
+                .nav-item-label {
+                    max-width: 0;
+                    opacity: 0;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                    white-space: nowrap;
+                    margin-left: 0;
+                }
+                .nav-item:hover .nav-item-label, .nav-item.active .nav-item-label {
+                    max-width: 100px;
+                    opacity: 1;
+                }
+                .hover-scale:hover { transform: scale(1.05); }
+            `}</style>
+
+            {/* Floating Capsule Navbar */}
+            <Box
+                style={{
+                    position: 'fixed',
+                    top: '24px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 100,
+                    borderRadius: '9999px',
+                    width: 'max-content',
+                    maxWidth: '90vw',
+                }}
+                className="nav-glass"
+            >
+                <Flex align="center" gap="2" p="2">
+                    {/* Logo */}
+                    <Box px="4">
+                        <style>{`
+                            .dashboard-logo-light { display: block; }
+                            .dashboard-logo-dark { display: none; }
+                            .dark .dashboard-logo-light, [data-theme='dark'] .dashboard-logo-light { display: none; }
+                            .dark .dashboard-logo-dark, [data-theme='dark'] .dashboard-logo-dark { display: block; }
+                        `}</style>
+                        <img className="dashboard-logo-light" src="/logo-on-light.jpg" alt="Strata" style={{ height: '20px', width: 'auto' }} />
+                        <img className="dashboard-logo-dark" src="/logo-on-dark.jpg" alt="Strata" style={{ height: '20px', width: 'auto' }} />
+                    </Box>
+
+                    <Separator orientation="vertical" size="2" style={{ height: '24px', margin: '0 4px' }} />
+
+                    {/* Nav Items */}
+                    <Flex gap="1">
+                        <NavItem icon={<HomeIcon width="16" height="16" />} label="Overview" />
+                        <NavItem icon={<CubeIcon width="16" height="16" />} label="Inventory" active />
+                        <NavItem icon={<BarChartIcon width="16" height="16" />} label="Production" />
+                        <NavItem icon={<ClipboardIcon width="16" height="16" />} label="Orders" />
+                    </Flex>
+
+                    <Separator orientation="vertical" size="2" style={{ height: '24px', margin: '0 4px' }} />
+
+                    {/* Tools */}
+                    <Flex gap="2" align="center" style={{ position: 'relative', paddingRight: '8px' }}>
+                        <IconButton
+                            variant="ghost"
+                            color="gray"
+                            radius="full"
+                            style={{ width: '32px', height: '32px' }}
+                            onClick={() => setIsAppsOpen(!isAppsOpen)}
+                        >
+                            <ViewGridIcon width="18" height="18" />
+                        </IconButton>
+
+                        {isAppsOpen && (
+                            <>
+                                <div
+                                    style={{
+                                        position: 'fixed', inset: 0, zIndex: 99, backgroundColor: 'transparent'
+                                    }}
+                                    onClick={() => setIsAppsOpen(false)}
+                                />
+                                <style>{`
+                                    :root { --apps-menu-bg: rgba(255, 255, 255, 0.85); }
+                                    .dark, [data-theme='dark'] { --apps-menu-bg: rgba(23, 25, 35, 0.85); }
+                                `}</style>
+                                <div
+                                    style={{
+                                        position: 'fixed',
+                                        top: '90px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        width: '400px',
+                                        padding: 0,
+                                        overflow: 'hidden',
+                                        backgroundColor: 'var(--apps-menu-bg)',
+                                        backdropFilter: 'blur(24px)',
+                                        WebkitBackdropFilter: 'blur(24px)',
+                                        borderRadius: '24px',
+                                        border: '1px solid var(--gray-a4)',
+                                        zIndex: 100,
+                                        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)'
+                                    }}
+                                >
+                                    <Grid columns="3" gap="3" p="4">
+                                        {[
+                                            { icon: <HomeIcon width="24" height="24" />, label: "Portal", color: "var(--blue-9)", bg: "var(--blue-3)" },
+                                            { icon: <PersonIcon width="24" height="24" />, label: "CRM", color: "var(--plum-9)", bg: "var(--plum-3)" },
+                                            { icon: <FileTextIcon width="24" height="24" />, label: "Invoice", color: "var(--green-9)", bg: "var(--green-3)" },
+                                            { icon: <CubeIcon width="24" height="24" />, label: "Inventory", color: "var(--orange-9)", bg: "var(--orange-3)" },
+                                            { icon: <BarChartIcon width="24" height="24" />, label: "Analytics", color: "var(--pink-9)", bg: "var(--pink-3)" },
+                                            { icon: <CheckCircledIcon width="24" height="24" />, label: "Support", color: "var(--cyan-9)", bg: "var(--cyan-3)" },
+                                            { icon: <ViewGridIcon width="24" height="24" />, label: "Board", color: "var(--indigo-9)", bg: "var(--indigo-3)" },
+                                            { icon: <CalendarIcon width="24" height="24" />, label: "Calendar", color: "var(--tomato-9)", bg: "var(--tomato-3)" },
+                                            { icon: <DotsHorizontalIcon width="24" height="24" />, label: "More", color: "var(--slate-9)", bg: "var(--slate-3)" },
+                                        ].map((app, i) => (
+                                            <Flex key={i} direction="column" align="center" gap="3" p="3" style={{ cursor: 'pointer', borderRadius: '16px', transition: 'all 0.2s' }} className="hover-bg hover-scale">
+                                                <Flex justify="center" align="center" style={{ width: '48px', height: '48px', borderRadius: '16px', backgroundColor: app.bg, color: app.color, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+                                                    {app.icon}
+                                                </Flex>
+                                                <Text size="2" weight="medium" color="gray">{app.label}</Text>
+                                            </Flex>
+                                        ))}
+                                    </Grid>
+                                </div>
+                            </>
+                        )}
+                        <ThemeToggle />
+                        <DropdownMenu.Root>
+                            <DropdownMenu.Trigger>
+                                <Button variant="ghost" radius="full" style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Avatar fallback="JD" size="1" radius="full" color="indigo" variant="soft" />
+                                </Button>
+                            </DropdownMenu.Trigger>
+                            <DropdownMenu.Content>
+                                <Box p="2">
+                                    <Text as="div" size="2" weight="bold">Jhon Doe</Text>
+                                    <Text as="div" size="1" color="gray">Admin</Text>
+                                </Box>
+                                <Separator size="4" my="1" />
+                                <DropdownMenu.Item color="red" onClick={onLogout}>
+                                    <ExitIcon /> Sign Out
+                                </DropdownMenu.Item>
+                            </DropdownMenu.Content>
+                        </DropdownMenu.Root>
+                    </Flex>
+                </Flex>
+            </Box>
+
+            {/* Page Header (Retained but spacer added) */}
+            <Flex align="center" justify="between" px="5" style={{ height: '64px', marginTop: '100px', borderBottom: '1px solid var(--gray-5)' }}>
                 <Flex align="center" gap="2">
                     <IconButton variant="ghost" onClick={onBack}>
                         <ChevronRightIcon style={{ transform: 'rotate(180deg)' }} />
@@ -77,60 +247,137 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                     <Button variant="solid" color="gray" style={{ backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)' }}>
                         <PlusIcon /> Add New Item
                     </Button>
-                    <ThemeToggle />
                 </Flex>
             </Flex>
 
             {/* Main Content */}
             <Flex direction="column" p="5" gap="5" style={{ flex: 1 }}>
-                <Heading size="6">Category Analysis: Office Seating</Heading>
-
-                {/* KPI Cards */}
-                <Grid columns={{ initial: '1', sm: '2', md: '3', lg: '5' }} gap="4">
-                    <Card size="2">
-                        <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>TOTAL SKUs</Text>
-                        <Text as="div" size="6" weight="bold">450</Text>
-                    </Card>
-                    <Card size="2">
-                        <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>AP PRODUCTION</Text>
-                        <Text as="div" size="6" weight="bold">50</Text>
-                    </Card>
-                    <Card size="2">
-                        <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>AVAILABLE</Text>
-                        <Text as="div" size="6" weight="bold">400</Text>
-                    </Card>
-                    <Card size="2">
-                        <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>LOW STOCK</Text>
-                        <Text as="div" size="6" weight="bold">15</Text>
-                    </Card>
-                    <Card size="2">
-                        <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>OUT OF STOCK</Text>
-                        <Text as="div" size="6" weight="bold" color="red">8</Text>
-                    </Card>
-                </Grid>
-
-                {/* Stepper */}
-                <Box position="relative" my="4">
-                    <Box style={{ position: 'absolute', top: '15px', left: 0, right: 0, height: '2px', backgroundColor: 'var(--gray-6)', zIndex: 0 }} />
-                    <Flex justify="between" style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '0 auto' }}>
-                        {['Category Selected', 'Item List Viewing', 'Details Pending', 'Edit Pending', 'Complete Pending'].map((step, i) => (
-                            <Flex key={i} direction="column" align="center" gap="2" style={{ backgroundColor: 'var(--gray-2)', padding: '0 8px' }}>
-                                <Flex align="center" justify="center" style={{
-                                    width: '32px', height: '32px', borderRadius: '50%',
-                                    backgroundColor: i <= 1 ? 'var(--gray-12)' : 'var(--gray-3)',
-                                    color: i <= 1 ? 'var(--gray-1)' : 'var(--gray-8)',
-                                    border: i <= 1 ? 'none' : '1px solid var(--gray-8)',
-                                    transition: 'background-color 0.2s, color 0.2s'
-                                }}>
-                                    {i < 1 ? <CheckCircledIcon /> : i === 1 ? <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--gray-1)' }} /> : <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--gray-8)' }} />}
-                                </Flex>
-                                <Text size="1" weight={i <= 1 ? 'bold' : 'regular'} style={{ color: i <= 1 ? 'var(--gray-12)' : 'var(--gray-10)', transition: 'color 0.2s' }}>
-                                    {step.split(' ')[0]}
-                                </Text>
+                {/* Collapsible Summary */}
+                <Box mb="6">
+                    {isSummaryExpanded ? (
+                        <>
+                            <Flex justify="end" mb="2">
+                                <Button
+                                    variant="ghost"
+                                    color="gray"
+                                    onClick={() => setIsSummaryExpanded(false)}
+                                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                    Hide Details <ChevronUpIcon />
+                                </Button>
                             </Flex>
-                        ))}
-                    </Flex>
+                            <Grid columns={{ initial: '1', sm: '2', md: '3', lg: '5' }} gap="4">
+                                <Card size="2">
+                                    <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>TOTAL SKUs</Text>
+                                    <Text as="div" size="6" weight="bold">450</Text>
+                                </Card>
+                                <Card size="2">
+                                    <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>IN PRODUCTION</Text>
+                                    <Text as="div" size="6" weight="bold">50</Text>
+                                </Card>
+                                <Card size="2">
+                                    <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>AVAILABLE</Text>
+                                    <Text as="div" size="6" weight="bold">400</Text>
+                                </Card>
+                                <Card size="2">
+                                    <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>LOW STOCK</Text>
+                                    <Text as="div" size="6" weight="bold">15</Text>
+                                </Card>
+                                <Card size="2">
+                                    <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase' }}>OUT OF STOCK</Text>
+                                    <Text as="div" size="6" weight="bold" color="red">8</Text>
+                                </Card>
+                            </Grid>
+
+                            {/* Integrated Stepper */}
+                            <Box style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--gray-5)' }}>
+                                <Box style={{ position: 'relative', paddingBottom: '8px' }}>
+                                    <Box style={{ position: 'absolute', top: '15px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--gray-4)', zIndex: 0 }} />
+                                    <Flex justify="between" style={{ position: 'relative', zIndex: 1, maxWidth: '900px', margin: '0 auto', padding: '0 16px' }}>
+                                        {[
+                                            { name: 'Category Selected', status: 'completed' },
+                                            { name: 'Item List Viewing', status: 'current' },
+                                            { name: 'Details Pending', status: 'pending' },
+                                            { name: 'Edit Pending', status: 'pending' },
+                                            { name: 'Complete Pending', status: 'pending' }
+                                        ].map((step, i) => (
+                                            <Flex key={i} direction="column" align="center" gap="2" style={{ cursor: 'default' }}>
+                                                <Flex
+                                                    align="center"
+                                                    justify="center"
+                                                    style={{
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        borderRadius: '50%',
+                                                        backgroundColor: step.status === 'completed' ? 'var(--gray-12)' : step.status === 'current' ? 'var(--color-panel-solid)' : 'var(--gray-3)',
+                                                        color: step.status === 'completed' ? 'var(--gray-1)' : step.status === 'current' ? 'var(--gray-12)' : 'var(--gray-8)',
+                                                        border: step.status === 'current' ? '2px solid var(--gray-12)' : '4px solid var(--color-page-background)',
+                                                        boxShadow: step.status === 'current' ? '0 0 0 4px var(--color-page-background)' : 'none',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                >
+                                                    {step.status === 'completed' ? <CheckCircledIcon width="16" height="16" /> :
+                                                        step.status === 'current' ? <Box style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'currentColor' }} /> :
+                                                            <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'currentColor' }} />}
+                                                </Flex>
+                                                <Box style={{ textAlign: 'center' }}>
+                                                    <Text size="2" weight="bold" color={step.status === 'completed' || step.status === 'current' ? 'gray' : 'gray'} style={{ color: step.status === 'pending' ? 'var(--gray-8)' : 'var(--gray-12)' }}>
+                                                        {step.name.split(' ')[0]}
+                                                    </Text>
+                                                    <Text as="div" size="1" color="gray" style={{ marginTop: '2px' }}>
+                                                        {step.name.split(' ').slice(1).join(' ')}
+                                                    </Text>
+                                                </Box>
+                                            </Flex>
+                                        ))}
+                                    </Flex>
+                                </Box>
+                            </Box>
+                        </>
+                    ) : (
+                        <Card size="2">
+                            <Flex align="center" justify="between" width="100%">
+                                <Flex align="center" gap="6" style={{ overflowX: 'auto', flex: 1, paddingBottom: 0 }}>
+                                    {[
+                                        { label: 'TOTAL SKUs', value: '450' },
+                                        { label: 'AVAILABLE', value: '400' },
+                                        { label: 'LOW STOCK', value: '15', color: 'var(--orange-9)' },
+                                        { label: 'OUT OF STOCK', value: '8', color: 'var(--red-9)' },
+                                    ].map((stat, i) => (
+                                        <Flex key={i} align="center" gap="2" style={{ minWidth: 'max-content' }}>
+                                            <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase' }}>{stat.label}:</Text>
+                                            <Text size="4" weight="bold" style={{ lineHeight: 1, color: stat.color }}>{stat.value}</Text>
+                                            {i < 3 && <Separator orientation="vertical" style={{ height: '24px', margin: '0 12px' }} />}
+                                        </Flex>
+                                    ))}
+                                </Flex>
+
+                                <Flex align="center" gap="3" style={{ marginLeft: 'auto', marginRight: '16px' }} display={{ initial: 'none', sm: 'flex' }}>
+                                    <Flex direction="column" align="end" gap="0">
+                                        <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase' }}>Current Phase</Text>
+                                        <Text size="2" weight="bold">Item List Viewing</Text>
+                                    </Flex>
+                                    <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid var(--gray-12)', backgroundColor: 'var(--color-background)' }}>
+                                        <Box style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--gray-12)' }} />
+                                    </Flex>
+                                </Flex>
+
+                                <Separator orientation="vertical" style={{ height: '32px', margin: '0 16px', display: 'block' }} />
+                                <Button
+                                    variant="ghost"
+                                    color="gray"
+                                    onClick={() => setIsSummaryExpanded(true)}
+                                    style={{ height: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: '2px', cursor: 'pointer' }}
+                                >
+                                    <ChevronDownIcon />
+                                    <Text size="1" weight="medium">Show Details</Text>
+                                </Button>
+                            </Flex>
+                        </Card>
+                    )}
                 </Box>
+
+
 
                 {/* Split View */}
                 <Grid columns="12" gap="6" style={{ flex: 1, minHeight: 0 }}>
@@ -166,7 +413,13 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                                         {items.map((item) => (
                                             <Table.Row
                                                 key={item.id}
-                                                style={{ cursor: 'pointer', backgroundColor: selectedItem.id === item.id ? 'var(--gray-3)' : undefined }}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    backgroundColor: selectedItem.id === item.id ? 'var(--accent-4)' : 'transparent',
+                                                    boxShadow: selectedItem.id === item.id ? 'inset 3px 0 0 0 var(--accent-9)' : 'none'
+                                                }}
+                                                className="hover:bg-gray-2"
                                                 onClick={() => setSelectedItem(item)}
                                             >
                                                 <Table.Cell><Checkbox /></Table.Cell>
@@ -178,7 +431,12 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                                                 </Table.Cell>
                                                 <Table.Cell>
                                                     <Box>
-                                                        <Text as="div" weight="bold" size="2">{item.name}</Text>
+                                                        <Flex align="center" gap="2">
+                                                            <Text as="div" weight="bold" size="2">{item.name}</Text>
+                                                            {(item as any).aiStatus && (
+                                                                <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: (item as any).aiStatus === 'warning' ? 'var(--orange-9)' : 'var(--blue-9)', boxShadow: `0 0 0 2px ${(item as any).aiStatus === 'warning' ? 'var(--orange-5)' : 'var(--blue-5)'}` }} />
+                                                            )}
+                                                        </Flex>
                                                         <Text as="div" size="1" color="gray">{item.category}</Text>
                                                     </Box>
                                                 </Table.Cell>
@@ -205,42 +463,194 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                     {/* Right Panel: Details */}
                     <Box style={{ gridColumn: 'span 4', height: '100%' }}>
                         <Card size="3" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <Flex justify="between" align="center" mb="4">
+                            <Flex justify="between" align="center" mb="4" pb="4" style={{ borderBottom: '1px solid var(--gray-5)' }}>
                                 <Heading size="3">Item Details</Heading>
-                                <IconButton variant="ghost" color="gray"><Cross2Icon /></IconButton>
+                                <Flex align="center" gap="1">
+                                    <IconButton variant="ghost" color="gray" style={{ cursor: 'pointer' }} onClick={() => setIsDocumentModalOpen(true)}><Pencil1Icon /></IconButton>
+                                    <Button size="1" variant="ghost" color="gray"><DownloadIcon /></Button>
+                                    <Button size="1" variant="ghost" color="gray"><PaperPlaneIcon /></Button>
+                                    <Button size="1" variant="ghost" style={{ color: 'var(--purple-9)', position: 'relative' }} onClick={() => setIsAiOpen(true)}>
+                                        <MagicWandIcon />
+                                        <Box style={{ position: 'absolute', top: '2px', right: '2px', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--purple-9)', border: '1px solid var(--color-background)' }} />
+                                    </Button>
+                                    <Separator orientation="vertical" style={{ height: '16px', margin: '0 4px' }} />
+                                    <Button size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></Button>
+                                </Flex>
                             </Flex>
 
                             <Flex direction="column" gap="5" style={{ overflow: 'auto' }}>
-                                {/* Quick Actions */}
-                                <Flex direction="column" gap="2">
-                                    <Flex
-                                        justify="between"
-                                        align="center"
-                                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                                        onClick={() => toggleSection('quickActions')}
-                                    >
-                                        <Text size="2" weight="medium">Quick Actions</Text>
-                                        <ChevronDownIcon style={{ transform: sections.quickActions ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
-                                    </Flex>
-                                    {sections.quickActions && (
-                                        <Grid columns="2" gap="2">
-                                            <Button variant="soft" color="gray" style={{ height: '64px', flexDirection: 'column', gap: '4px', backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)' }}>
-                                                <FileTextIcon /> Edit Details
-                                            </Button>
-                                            <Button variant="outline" color="gray" style={{ height: '64px', flexDirection: 'column', gap: '4px' }}>
-                                                <CopyIcon /> Duplicate
-                                            </Button>
-                                            <Button variant="outline" color="gray" style={{ height: '64px', flexDirection: 'column', gap: '4px' }}>
-                                                <DownloadIcon /> Export PDF
-                                            </Button>
-                                            <Button variant="outline" color="gray" style={{ height: '64px', flexDirection: 'column', gap: '4px' }}>
-                                                <PaperPlaneIcon /> Ship Now
-                                            </Button>
-                                        </Grid>
-                                    )}
-                                </Flex>
 
-                                <Separator size="4" />
+
+                                {/* AI Side Panel Section */}
+                                {(selectedItem as any).aiStatus && (
+                                    <Box>
+                                        <Flex
+                                            align="center"
+                                            justify="between"
+                                            mb="2"
+                                            style={{ cursor: 'pointer', userSelect: 'none' }}
+                                            onClick={() => toggleSection('aiSuggestions')}
+                                        >
+                                            <Flex align="center" gap="2">
+                                                <MagicWandIcon style={{ color: 'var(--purple-9)' }} />
+                                                <Text size="1" weight="bold" style={{ color: 'var(--gray-12)' }}>AI Suggestions</Text>
+                                                <Box style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
+                                                    <Box style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', backgroundColor: 'var(--purple-9)', opacity: 0.75, animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
+                                                    <Box style={{ position: 'relative', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--purple-9)' }} />
+                                                </Box>
+                                            </Flex>
+                                            <ChevronDownIcon style={{ transform: sections.aiSuggestions ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                                        </Flex>
+
+                                        {sections.aiSuggestions && (
+                                            <>
+                                                {(selectedItem as any).aiStatus === 'info' ? (
+                                                    <Card variant="surface" style={{ backgroundColor: 'var(--blue-3)', borderColor: 'var(--blue-6)' }}>
+                                                        <Text size="2" weight="bold" style={{ color: 'var(--blue-11)', marginBottom: '8px', display: 'block' }}>Optimization Opportunity</Text>
+                                                        <Flex direction="column" gap="2">
+
+                                                            {/* Option 1 */}
+                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--gray-6)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                                <Flex gap="2">
+                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--gray-8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                        <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'transparent' }} />
+                                                                    </Box>
+                                                                    <Box>
+                                                                        <Text as="div" size="2" weight="medium">Standard {selectedItem.name}</Text>
+                                                                        <Text as="div" size="1" color="gray">Listed Price</Text>
+                                                                    </Box>
+                                                                </Flex>
+                                                            </Box>
+
+                                                            {/* Option 2 */}
+                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--green-8)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                                <Flex gap="2">
+                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--green-9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                        <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--green-9)' }} />
+                                                                    </Box>
+                                                                    <Box>
+                                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--green-11)' }}>Eco-Friendly {selectedItem.name}</Text>
+                                                                        <Text as="div" size="1" color="gray">-15% Carbon Footprint</Text>
+                                                                    </Box>
+                                                                </Flex>
+                                                            </Box>
+
+                                                            {/* Option 3 */}
+                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--gray-6)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                                <Flex gap="2">
+                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--gray-8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+                                                                    <Box>
+                                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--purple-11)' }}>Premium {selectedItem.name}</Text>
+                                                                        <Text as="div" size="1" color="gray">+ High Durability Finish</Text>
+                                                                    </Box>
+                                                                </Flex>
+                                                            </Box>
+
+                                                            <Button style={{ width: '100%', marginTop: '4px', backgroundColor: 'var(--blue-9)', color: 'white', cursor: 'pointer' }}>Apply Selection</Button>
+                                                        </Flex>
+                                                    </Card>
+                                                ) : (
+                                                    /* Data Fix / Warning */
+                                                    <Card variant="surface" style={{ backgroundColor: 'var(--orange-3)', borderColor: 'var(--orange-6)' }}>
+                                                        <Flex gap="3">
+                                                            <ExclamationTriangleIcon style={{ color: 'var(--orange-9)', width: '20px', height: '20px', flexShrink: 0 }} />
+                                                            <Box style={{ width: '100%' }}>
+                                                                <Flex justify="between" align="start">
+                                                                    <Box>
+                                                                        <Text as="div" size="2" weight="bold" style={{ color: 'var(--orange-11)' }}>Database Discrepancy</Text>
+                                                                        <Text as="div" size="1" style={{ color: 'var(--orange-10)', marginTop: '4px' }}>Stock count mismatch detected.</Text>
+                                                                    </Box>
+                                                                    {!isManualFixMode && (
+                                                                        <Button
+                                                                            size="1"
+                                                                            variant="ghost"
+                                                                            style={{ color: 'var(--orange-11)', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                            onClick={() => setIsManualFixMode(true)}
+                                                                        >
+                                                                            Resolve Manually
+                                                                        </Button>
+                                                                    )}
+                                                                </Flex>
+
+                                                                {!isManualFixMode ? (
+                                                                    <>
+                                                                        <Flex align="center" justify="between" mt="2" mb="3" px="2" style={{ backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '4px', padding: '8px' }}>
+                                                                            <Box style={{ textAlign: 'center' }}>
+                                                                                <Text as="div" size="1" color="gray" style={{ textTransform: 'uppercase' }}>Local</Text>
+                                                                                <Text as="div" size="3" weight="bold">{selectedItem.stock}</Text>
+                                                                            </Box>
+                                                                            <UpdateIcon style={{ color: 'var(--gray-8)' }} />
+                                                                            <Box style={{ textAlign: 'center' }}>
+                                                                                <Text as="div" size="1" color="gray" style={{ textTransform: 'uppercase' }}>Remote</Text>
+                                                                                <Text as="div" size="3" weight="bold" style={{ color: 'var(--orange-11)' }}>{(selectedItem.stock || 0) + 5}</Text>
+                                                                            </Box>
+                                                                        </Flex>
+
+                                                                        <Button style={{ width: '100%', backgroundColor: 'var(--orange-9)', color: 'white', cursor: 'pointer' }}>Auto-Sync to Warehouse</Button>
+                                                                    </>
+                                                                ) : (
+                                                                    <Box mt="3">
+                                                                        <RadioGroup.Root value={resolutionMethod} onValueChange={(val: any) => setResolutionMethod(val)}>
+                                                                            <Flex direction="column" gap="2">
+                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'local' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'local' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
+                                                                                    <RadioGroup.Item value="local" style={{ cursor: 'pointer' }}>
+                                                                                        <Box ml="2">
+                                                                                            <Text size="2" weight="bold">Keep Local Value</Text>
+                                                                                            <Text as="div" size="1" color="gray">{selectedItem.stock} items</Text>
+                                                                                        </Box>
+                                                                                    </RadioGroup.Item>
+                                                                                </Box>
+                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'remote' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'remote' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
+                                                                                    <RadioGroup.Item value="remote" style={{ cursor: 'pointer' }}>
+                                                                                        <Box ml="2">
+                                                                                            <Text size="2" weight="bold">Accept Warehouse Value</Text>
+                                                                                            <Text as="div" size="1" color="gray">{(selectedItem.stock || 0) + 5} items</Text>
+                                                                                        </Box>
+                                                                                    </RadioGroup.Item>
+                                                                                </Box>
+                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'custom' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'custom' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
+                                                                                    <RadioGroup.Item value="custom" style={{ cursor: 'pointer' }}>
+                                                                                        <Box ml="2">
+                                                                                            <Text size="2" weight="bold">Custom Value</Text>
+                                                                                            {resolutionMethod === 'custom' && (
+                                                                                                <TextField.Root
+                                                                                                    size="1"
+                                                                                                    placeholder="#"
+                                                                                                    style={{ marginTop: '4px', width: '80px' }}
+                                                                                                    value={customValue}
+                                                                                                    onChange={(e) => setCustomValue(e.target.value)}
+                                                                                                />
+                                                                                            )}
+                                                                                        </Box>
+                                                                                    </RadioGroup.Item>
+                                                                                </Box>
+                                                                            </Flex>
+                                                                        </RadioGroup.Root>
+
+                                                                        <Flex gap="2" mt="3">
+                                                                            <Button variant="soft" color="gray" style={{ flex: 1, cursor: 'pointer' }} onClick={() => setIsManualFixMode(false)}>Cancel</Button>
+                                                                            <Button
+                                                                                style={{ flex: 1, backgroundColor: 'var(--orange-9)', color: 'white', cursor: 'pointer' }}
+                                                                                onClick={() => {
+                                                                                    alert(`Fixed with: ${resolutionMethod === 'custom' ? customValue : (resolutionMethod === 'remote' ? (selectedItem.stock + 5) : selectedItem.stock)}`)
+                                                                                    setIsManualFixMode(false)
+                                                                                }}
+                                                                            >
+                                                                                Confirm Fix
+                                                                            </Button>
+                                                                        </Flex>
+                                                                    </Box>
+                                                                )}
+                                                            </Box>
+                                                        </Flex>
+                                                    </Card>
+                                                )}
+                                            </>
+                                        )}
+                                    </Box>
+                                )}
+
+
 
                                 {/* Product Overview */}
                                 <Flex direction="column" gap="2">
@@ -301,69 +711,222 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                                     )}
                                 </Flex>
 
-                                {/* AI */}
-                                <Card variant="surface" style={{ backgroundColor: 'var(--gray-2)' }}>
-                                    <Flex align="center" gap="2" mb="2">
-                                        <InfoCircledIcon /> <Text size="1" weight="bold">AI Recommendations</Text>
-                                    </Flex>
-                                    <Card variant="classic" style={{ backgroundColor: 'var(--gray-3)' }}>
-                                        <Flex gap="2">
-                                            <ExclamationTriangleIcon />
-                                            <Box>
-                                                <Text as="div" size="1" weight="bold">Reorder Recommendation</Text>
-                                                <Text as="div" size="1" color="gray">Stock projected to reach reorder point in 10 days.</Text>
-                                                <Flex gap="2" mt="2">
-                                                    <Dialog.Root>
-                                                        <Dialog.Trigger>
-                                                            <Button size="1" variant="solid" color="gray" style={{ backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)', cursor: 'pointer' }}>Create PO</Button>
-                                                        </Dialog.Trigger>
-                                                        <Dialog.Content style={{ maxWidth: 450 }}>
-                                                            <Dialog.Title>Create Purchase Order</Dialog.Title>
-                                                            <Dialog.Description size="2" mb="4">
-                                                                Review order details before confirming.
-                                                            </Dialog.Description>
+                                <Separator size="4" />
 
-                                                            <Flex direction="column" gap="3">
-                                                                <Box p="3" style={{ backgroundColor: 'var(--gray-3)', borderRadius: 'var(--radius-3)' }}>
-                                                                    <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase' }}>Order Summary</Text>
-                                                                    <Flex justify="between" mt="2">
-                                                                        <Text weight="bold">{selectedItem.name}</Text>
-                                                                        <Text>x 50 Units</Text>
-                                                                    </Flex>
-                                                                    <Flex justify="between">
-                                                                        <Text size="1" color="gray">SKU: {selectedItem.id}</Text>
-                                                                        <Text size="1" color="gray">@ $45.00/unit</Text>
-                                                                    </Flex>
-                                                                </Box>
-
-                                                                <Flex justify="between" pt="3" style={{ borderTop: '1px solid var(--gray-5)' }}>
-                                                                    <Text weight="medium">Total Cost</Text>
-                                                                    <Text size="5" weight="bold">$2,250.00</Text>
-                                                                </Flex>
-                                                            </Flex>
-
-                                                            <Flex gap="3" mt="4" justify="end">
-                                                                <Dialog.Close>
-                                                                    <Button variant="soft" color="gray">Cancel</Button>
-                                                                </Dialog.Close>
-                                                                <Dialog.Close>
-                                                                    <Button onClick={() => alert("Purchase Order Created!")}>Confirm Order</Button>
-                                                                </Dialog.Close>
-                                                            </Flex>
-                                                        </Dialog.Content>
-                                                    </Dialog.Root>
-                                                    <Button size="1" variant="outline" color="gray" style={{ cursor: 'pointer' }}>Dismiss</Button>
-                                                </Flex>
-                                            </Box>
+                                {/* Action Required */}
+                                <Flex direction="column" gap="2">
+                                    <Text size="2" weight="medium">Action Required</Text>
+                                    <Box style={{ paddingLeft: '16px', borderLeft: '1px solid var(--gray-4)' }}>
+                                        <Flex direction="column" gap="2">
+                                            <Button
+                                                style={{ width: '100%', backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)', cursor: 'pointer' }}
+                                                onClick={() => setIsPOModalOpen(true)}
+                                            >
+                                                Create Purchase Order
+                                            </Button>
+                                            <Button variant="outline" color="gray" style={{ width: '100%', cursor: 'pointer' }}>
+                                                Send Acknowledgment
+                                            </Button>
                                         </Flex>
-                                    </Card>
-                                </Card>
+                                    </Box>
+                                </Flex>
+
+
 
                             </Flex>
                         </Card>
                     </Box>
                 </Grid>
             </Flex>
-        </Flex>
+
+            <Dialog.Root open={isAiOpen} onOpenChange={setIsAiOpen}>
+                <Dialog.Content style={{ maxWidth: 450 }}>
+                    <Dialog.Title>
+                        <Flex align="center" gap="2">
+                            <MagicWandIcon color="var(--purple-9)" />
+                            AI Diagnosis & Suggestions
+                        </Flex>
+                    </Dialog.Title>
+                    <Dialog.Description size="2" mb="4">
+                        Review AI-detected improvements for this item.
+                    </Dialog.Description>
+
+                    <Flex direction="column" gap="3">
+                        {/* Informative Suggestion */}
+                        <Box style={{ backgroundColor: 'var(--blue-3)', border: '1px solid var(--blue-6)', borderRadius: 'var(--radius-3)', padding: '12px' }}>
+                            <Flex gap="3">
+                                <InfoCircledIcon color="var(--blue-9)" width="20" height="20" />
+                                <Box>
+                                    <Text weight="bold" size="2" color="blue">Category Ambiguity</Text>
+                                    <Text size="1" color="blue" mt="1">
+                                        The item '{selectedItem.name}' matches patterns for both 'Office' and 'Home' categories. Please verify classification.
+                                    </Text>
+                                    <Flex gap="2" mt="2">
+                                        <Button size="1" variant="soft" color="blue">Keep 'Office'</Button>
+                                        <Button size="1" variant="soft" color="blue">Move to 'Home'</Button>
+                                    </Flex>
+                                </Box>
+                            </Flex>
+                        </Box>
+
+                        {/* Data Fix Suggestion */}
+                        <Box style={{ backgroundColor: 'var(--orange-3)', border: '1px solid var(--orange-6)', borderRadius: 'var(--radius-3)', padding: '12px' }}>
+                            <Flex gap="3">
+                                <ExclamationTriangleIcon color="var(--orange-9)" width="20" height="20" />
+                                <Box>
+                                    <Text weight="bold" size="2" color="orange">Stock Sync Required</Text>
+                                    <Text size="1" color="orange" mt="1">
+                                        Local stock count ({selectedItem.stock}) differs from Warehouse Log ({(selectedItem.stock || 0) + 5}).
+                                    </Text>
+                                    <Button size="1" color="orange" mt="2">Synchronize Database</Button>
+                                </Box>
+                            </Flex>
+                        </Box>
+                    </Flex>
+
+                    <Flex gap="3" mt="4" justify="end">
+                        <Dialog.Close>
+                            <Button variant="soft" color="gray">
+                                Dismiss
+                            </Button>
+                        </Dialog.Close>
+                    </Flex>
+                </Dialog.Content>
+            </Dialog.Root>
+
+            <Dialog.Root open={isPOModalOpen} onOpenChange={setIsPOModalOpen}>
+                <Dialog.Content style={{ maxWidth: 450 }}>
+                    <Dialog.Title>Create Purchase Order</Dialog.Title>
+                    <Dialog.Description size="2" mb="4">
+                        Review and confirm the purchase order details.
+                    </Dialog.Description>
+                    <Flex direction="column" gap="3">
+                        <Box style={{ padding: '12px', border: '1px solid var(--gray-6)', borderRadius: '4px', backgroundColor: 'var(--gray-2)' }}>
+                            <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase' }}>Order Summary</Text>
+                            <Flex justify="between" mt="2">
+                                <Text size="2" weight="medium">{selectedItem.name}</Text>
+                                <Text size="2">x 50 Units</Text>
+                            </Flex>
+                            <Flex justify="between" mt="1">
+                                <Text size="1" color="gray">SKU: {selectedItem.id}</Text>
+                                <Text size="1" color="gray">@ $45.00/unit</Text>
+                            </Flex>
+                        </Box>
+                        <Flex justify="between" style={{ paddingTop: '8px', borderTop: '1px solid var(--gray-6)' }}>
+                            <Text size="2" weight="medium">Total Cost</Text>
+                            <Text size="5" weight="bold">$2,250.00</Text>
+                        </Flex>
+                    </Flex>
+                    <Flex gap="3" mt="4" justify="end">
+                        <Dialog.Close>
+                            <Button variant="soft" color="gray">Cancel</Button>
+                        </Dialog.Close>
+                        <Dialog.Close>
+                            <Button style={{ backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)' }} onClick={() => { setIsPOModalOpen(false); alert('Purchase Order Created!') }}>Confirm Order</Button>
+                        </Dialog.Close>
+                    </Flex>
+                </Dialog.Content>
+            </Dialog.Root>
+            <Dialog.Root open={isDocumentModalOpen} onOpenChange={setIsDocumentModalOpen}>
+                <Dialog.Content style={{ maxWidth: 800 }}>
+                    <Dialog.Title>Order Document Preview</Dialog.Title>
+                    <Dialog.Description size="2" mb="4">
+                        Previewing Purchase Order #PO-2025-001
+                    </Dialog.Description>
+
+                    <Box style={{ backgroundColor: 'white', color: 'black', padding: '40px', borderRadius: '4px', height: '600px', overflow: 'auto', border: '1px solid var(--gray-4)' }}>
+                        <Flex justify="between" align="end" mb="6" style={{ borderBottom: '2px solid black', paddingBottom: '16px' }}>
+                            <Heading size="6">PURCHASE ORDER</Heading>
+                            <Box style={{ textAlign: 'right' }}>
+                                <Text weight="bold" size="4" as="div">STRATA INC.</Text>
+                                <Text size="1" as="div">123 Innovation Dr., Tech City</Text>
+                            </Box>
+                        </Flex>
+
+                        <Flex justify="between" mb="8">
+                            <Box>
+                                <Text size="1" weight="bold" color="gray" mb="1" as="div">VENDOR</Text>
+                                <Text weight="bold" as="div">OfficeSupplies Co.</Text>
+                                <Text size="2" as="div">555 Supplier Lane</Text>
+                            </Box>
+                            <Box style={{ textAlign: 'right' }}>
+                                <Flex justify="between" style={{ width: '200px', marginBottom: '4px' }}>
+                                    <Text size="2" weight="bold" color="gray">PO #:</Text>
+                                    <Text size="2" weight="bold">PO-2025-001</Text>
+                                </Flex>
+                                <Flex justify="between" style={{ width: '200px' }}>
+                                    <Text size="2" weight="bold" color="gray">DATE:</Text>
+                                    <Text size="2">Jan 12, 2026</Text>
+                                </Flex>
+                            </Box>
+                        </Flex>
+
+                        <Box style={{ marginBottom: '32px' }}>
+                            <Flex style={{ backgroundColor: '#f0f0f0', padding: '8px', fontWeight: 'bold' }}>
+                                <Box style={{ flex: 2 }}>ITEM</Box>
+                                <Box style={{ flex: 1, textAlign: 'right' }}>QTY</Box>
+                                <Box style={{ flex: 1, textAlign: 'right' }}>UNIT PRICE</Box>
+                                <Box style={{ flex: 1, textAlign: 'right' }}>TOTAL</Box>
+                            </Flex>
+                            <Flex style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
+                                <Box style={{ flex: 2 }}>
+                                    <Text weight="bold" as="div">{selectedItem.name}</Text>
+                                    <Text size="1" color="gray" as="div">{selectedItem.id}</Text>
+                                </Box>
+                                <Box style={{ flex: 1, textAlign: 'right' }}>50</Box>
+                                <Box style={{ flex: 1, textAlign: 'right' }}>$45.00</Box>
+                                <Box style={{ flex: 1, textAlign: 'right' }}>$2,250.00</Box>
+                            </Flex>
+                        </Box>
+
+                        <Flex justify="end">
+                            <Box style={{ width: '250px' }}>
+                                <Flex justify="between" mb="2">
+                                    <Text size="2" color="gray">Subtotal:</Text>
+                                    <Text size="2" weight="bold">$2,250.00</Text>
+                                </Flex>
+                                <Flex justify="between" align="center" style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #eee' }}>
+                                    <Text size="3" weight="bold">TOTAL:</Text>
+                                    <Text size="5" weight="bold" style={{ color: 'var(--blue-9)' }}>$2,250.00</Text>
+                                </Flex>
+                            </Box>
+                        </Flex>
+                    </Box>
+
+                    <Flex gap="3" mt="4" justify="end">
+                        <Dialog.Close>
+                            <Button variant="soft" color="gray">Close</Button>
+                        </Dialog.Close>
+                        <Button style={{ backgroundColor: 'var(--blue-9)', color: 'white' }}>Download PDF</Button>
+                    </Flex>
+                </Dialog.Content>
+            </Dialog.Root>
+
+        </Flex >
+    )
+}
+
+function NavItem({ icon, label, active }: { icon: any, label: string, active?: boolean }) {
+    return (
+        <Button
+            className={`nav-item ${active ? 'active' : ''}`}
+            variant="ghost"
+            color={active ? 'indigo' : 'gray'}
+            radius="full"
+            style={{
+                height: '36px',
+                padding: '0 16px',
+                backgroundColor: active ? 'var(--accent-a3)' : 'transparent',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+            }}
+        >
+            <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {icon}
+            </Box>
+            <span className="nav-item-label" style={{ fontSize: '14px', fontWeight: 500 }}>{label}</span>
+        </Button>
     )
 }

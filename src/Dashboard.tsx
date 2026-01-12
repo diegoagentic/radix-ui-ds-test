@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { Button, Card, Flex, Grid, Heading, Text, TextField, Avatar, Badge, Table, IconButton, Separator, Box, Popover, Checkbox, DropdownMenu, Dialog } from '@radix-ui/themes'
+import { useState, useMemo, useEffect } from 'react'
+import { Button, Card, Flex, Grid, Heading, Text, TextField, Avatar, Badge, Table, IconButton, Separator, Box, Popover, Checkbox, DropdownMenu, Dialog, Tabs, Select } from '@radix-ui/themes'
 import { MagnifyingGlassIcon, BellIcon, CalendarIcon, PlusIcon, CopyIcon, FileTextIcon, PaperPlaneIcon, ReaderIcon, ArrowRightIcon, PersonIcon, TargetIcon, RocketIcon, ViewGridIcon, ListBulletIcon, SunIcon, MoonIcon, ExitIcon, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, EyeOpenIcon, Pencil1Icon, TrashIcon, EnvelopeClosedIcon, CheckCircledIcon, ClockIcon, SewingPinIcon, Cross2Icon, HomeIcon, CubeIcon, BarChartIcon, ClipboardIcon, DotsHorizontalIcon, QuestionMarkCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts'
 import { useTheme } from './ThemeContext';
@@ -29,9 +29,10 @@ const salesData = [
 ]
 
 const recentOrders = [
-    { id: "#ORD-2055", customer: "AutoManfacture Co.", amount: "$385,000", status: "Pending Review", date: "Dec 20, 2025", avatar: "AC", statusColor: 'gray' as const },
-    { id: "#ORD-2054", customer: "TechDealer Solutions", amount: "$62,500", status: "In Production", date: "Nov 15, 2025", avatar: "TS", statusColor: 'blue' as const },
-    { id: "#ORD-2053", customer: "Urban Living Inc.", amount: "$112,000", status: "Shipped", date: "Oct 30, 2025", avatar: "UL", statusColor: 'green' as const },
+    { id: "#ORD-2055", customer: "AutoManfacture Co.", client: "AutoManfacture Co.", project: "Office Renovation", amount: "$385,000", status: "Pending Review", date: "Dec 20, 2025", avatar: "AC", statusColor: 'gray' as const },
+    { id: "#ORD-2054", customer: "TechDealer Solutions", client: "TechDealer Solutions", project: "HQ Upgrade", amount: "$62,500", status: "In Production", date: "Nov 15, 2025", avatar: "TS", statusColor: 'blue' as const },
+    { id: "#ORD-2053", customer: "Urban Living Inc.", client: "Urban Living Inc.", project: "Lobby Refresh", amount: "$112,000", status: "Shipped", date: "Oct 30, 2025", avatar: "UL", statusColor: 'green' as const },
+    { id: "#ORD-2052", customer: "Global Logistics", client: "Global Logistics", project: "Warehouse Expansion", amount: "$45,000", status: "Delivered", date: "Oct 15, 2025", avatar: "GL", statusColor: 'gray' as const },
 ]
 
 const trackingSteps = [
@@ -47,7 +48,26 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
     const { appearance } = useTheme();
 
     const [searchQuery, setSearchQuery] = useState('')
-    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+    const [selectedClient, setSelectedClient] = useState('All Clients')
+    const [selectedProject, setSelectedProject] = useState('All Projects')
+    const [activeTab, setActiveTab] = useState('active')
+
+    const clients = ['All Clients', ...Array.from(new Set(recentOrders.map(o => o.client)))]
+
+    const availableProjects = useMemo(() => {
+        if (selectedClient === 'All Clients') {
+            return ['All Projects', ...Array.from(new Set(recentOrders.map(o => o.project)))]
+        }
+        return ['All Projects', ...Array.from(new Set(recentOrders.filter(o => o.client === selectedClient).map(o => o.project)))]
+    }, [selectedClient])
+
+    useEffect(() => {
+        if (selectedClient !== 'All Clients' && availableProjects.length > 1) {
+            setSelectedProject(availableProjects[1])
+        } else {
+            setSelectedProject('All Projects')
+        }
+    }, [selectedClient, availableProjects])
     const [trackingOrder, setTrackingOrder] = useState<any>(null)
     const [showMetrics, setShowMetrics] = useState(false)
     const [isAppsOpen, setIsAppsOpen] = useState(false)
@@ -66,10 +86,30 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
         return recentOrders.filter(order => {
             const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 order.customer.toLowerCase().includes(searchQuery.toLowerCase())
-            const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(order.status)
-            return matchesSearch && matchesStatus
+
+            const matchesProject = selectedProject === 'All Projects' || order.project === selectedProject
+            const matchesClient = selectedClient === 'All Clients' || order.client === selectedClient
+
+            let matchesTab = true;
+            const isCompleted = ['Delivered', 'Completed'].includes(order.status);
+
+            if (activeTab === 'active') { // Active
+                matchesTab = !isCompleted
+            } else if (activeTab === 'completed') { // Completed
+                matchesTab = isCompleted
+            }
+
+            return matchesSearch && matchesProject && matchesClient && matchesTab
         })
-    }, [searchQuery, selectedStatuses])
+    }, [searchQuery, selectedProject, selectedClient, activeTab])
+
+    const counts = useMemo(() => {
+        return {
+            active: recentOrders.filter(o => !['Delivered', 'Completed'].includes(o.status)).length,
+            completed: recentOrders.filter(o => ['Delivered', 'Completed'].includes(o.status)).length,
+            all: recentOrders.length
+        }
+    }, [])
 
     return (
         <Flex direction="column" style={{ minHeight: '100vh', backgroundColor: 'var(--gray-2)' }}>
@@ -338,12 +378,41 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                     {/* Orders Table */}
                     < Box style={{ gridColumn: 'span 3' }}>
                         <Card size="3" style={{ borderRadius: '16px' }}>
-                            <Flex justify="between" align="center" mb="5">
-                                <Flex align="center" gap="3">
-                                    <Heading size="3">Recent Orders</Heading>
-                                    <Badge variant="soft" color="gray" radius="full">Active</Badge>
-                                </Flex>
-                                <Flex gap="3" align="center">
+                            <Flex justify="between" align="center" mb="5" direction={{ initial: 'column', md: 'row' }} gap="4">
+                                <Box>
+                                    <Heading size="3" mb="2">Recent Orders</Heading>
+                                    <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+                                        <Tabs.List>
+                                            <Tabs.Trigger value="active">
+                                                Active <Badge ml="2" color="gray" radius="full" variant="solid" highContrast>{counts.active}</Badge>
+                                            </Tabs.Trigger>
+                                            <Tabs.Trigger value="completed">
+                                                Completed <Badge ml="2" color="gray" radius="full" variant="solid" highContrast>{counts.completed}</Badge>
+                                            </Tabs.Trigger>
+                                            <Tabs.Trigger value="all">
+                                                All <Badge ml="2" color="gray" radius="full" variant="solid" highContrast>{counts.all}</Badge>
+                                            </Tabs.Trigger>
+                                        </Tabs.List>
+                                    </Tabs.Root>
+                                </Box>
+
+                                <Flex gap="3" align="center" wrap="wrap">
+                                    <Select.Root value={selectedClient} onValueChange={setSelectedClient}>
+                                        <Select.Trigger placeholder="Client" />
+                                        <Select.Content>
+                                            {clients.map(c => <Select.Item key={c} value={c}>{c}</Select.Item>)}
+                                        </Select.Content>
+                                    </Select.Root>
+
+                                    <Select.Root value={selectedProject} onValueChange={setSelectedProject}>
+                                        <Select.Trigger placeholder="Project" />
+                                        <Select.Content>
+                                            {availableProjects.map(p => <Select.Item key={p} value={p}>{p}</Select.Item>)}
+                                        </Select.Content>
+                                    </Select.Root>
+
+                                    <Separator orientation="vertical" style={{ height: '24px', display: 'block' }} />
+
                                     <Flex gap="0" style={{ backgroundColor: 'var(--gray-3)', padding: '2px', borderRadius: '8px' }}>
                                         <IconButton
                                             variant={viewMode === 'list' ? 'surface' : 'ghost'}
@@ -364,33 +433,6 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                             <ViewGridIcon />
                                         </IconButton>
                                     </Flex>
-                                    <Popover.Root>
-                                        <Popover.Trigger>
-                                            <Button variant="outline" color="gray" radius="large" size="1">
-                                                Status <ChevronDownIcon />
-                                            </Button>
-                                        </Popover.Trigger>
-                                        <Popover.Content style={{ width: '200px' }}>
-                                            <Flex direction="column" gap="2">
-                                                {['Pending Review', 'In Production', 'Shipped'].map((status) => (
-                                                    <Text as="label" size="2" key={status} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                                        <Checkbox
-                                                            checked={selectedStatuses.includes(status)}
-                                                            onCheckedChange={(checked) => {
-                                                                if (checked) {
-                                                                    setSelectedStatuses([...selectedStatuses, status])
-                                                                } else {
-                                                                    setSelectedStatuses(selectedStatuses.filter(s => s !== status))
-                                                                }
-                                                            }}
-                                                        /> {status}
-                                                    </Text>
-                                                ))}
-                                                <Separator size="4" />
-                                                <Button variant="ghost" size="1" onClick={() => setSelectedStatuses([])}>Clear Filter</Button>
-                                            </Flex>
-                                        </Popover.Content>
-                                    </Popover.Root>
                                 </Flex>
                             </Flex>
 
