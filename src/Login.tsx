@@ -106,8 +106,8 @@ export default function Login({ onLoginSuccess }: { onLoginSuccess: () => void }
                                         style={{ width: '100%', height: '48px', justifyContent: 'center', gap: '8px', color: 'white', borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.05)' }}
                                         onClick={handleAction}
                                     >
-                                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: 20, height: 20, filter: 'brightness(0.9) contrast(1.2)' }} />
-                                        Login with Google
+                                        <svg width="20" height="20" viewBox="0 0 21 21"><path fill="#f25022" d="M1 1h9v9H1z" /><path fill="#7fba00" d="M11 1h9v9h-9z" /><path fill="#00a4ef" d="M1 11h9v9H1z" /><path fill="#ffb900" d="M11 11h9v9h-9z" /></svg>
+                                        Login with Microsoft
                                     </Button>
 
                                     <Flex align="center" gap="2">

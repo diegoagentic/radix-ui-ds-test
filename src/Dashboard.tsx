@@ -82,6 +82,29 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
         setExpandedIds(newExpanded)
     }
 
+    // Dynamic Metrics Data based on current filters (Client/Project)
+    const metricsData = useMemo(() => {
+        const dataToAnalyze = recentOrders.filter(order => {
+            const matchesProject = selectedProject === 'All Projects' || order.project === selectedProject
+            const matchesClient = selectedClient === 'All Clients' || order.client === selectedClient
+            return matchesProject && matchesClient
+        })
+
+        const totalValue = dataToAnalyze.reduce((sum, order) => {
+            return sum + parseInt(order.amount.replace(/[^0-9]/g, ''))
+        }, 0)
+
+        const activeCount = dataToAnalyze.filter(o => !['Delivered', 'Completed'].includes(o.status)).length
+        const completedCount = dataToAnalyze.filter(o => ['Delivered', 'Completed'].includes(o.status)).length
+
+        return {
+            revenue: totalValue.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+            activeOrders: activeCount,
+            completedOrders: completedCount,
+            efficiency: dataToAnalyze.length > 0 ? Math.round((completedCount / dataToAnalyze.length) * 100) : 0
+        }
+    }, [selectedProject, selectedClient])
+
     const filteredOrders = useMemo(() => {
         return recentOrders.filter(order => {
             const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,6 +120,8 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                 matchesTab = !isCompleted
             } else if (activeTab === 'completed') { // Completed
                 matchesTab = isCompleted
+            } else if (activeTab === 'metrics') {
+                matchesTab = true
             }
 
             return matchesSearch && matchesProject && matchesClient && matchesTab
@@ -380,7 +405,9 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                         <Card size="3" style={{ borderRadius: '16px' }}>
                             <Flex justify="between" align="center" mb="5" direction={{ initial: 'column', md: 'row' }} gap="4">
                                 <Box>
-                                    <Heading size="3" mb="2">Recent Orders</Heading>
+                                    <Heading size="3" mb="2">
+                                        {activeTab === 'metrics' ? 'Performance Metrics' : 'Recent Orders'}
+                                    </Heading>
                                     <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
                                         <Tabs.List>
                                             <Tabs.Trigger value="active">
@@ -391,6 +418,9 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                             </Tabs.Trigger>
                                             <Tabs.Trigger value="all">
                                                 All <Badge ml="2" color="gray" radius="full" variant="solid" highContrast>{counts.all}</Badge>
+                                            </Tabs.Trigger>
+                                            <Tabs.Trigger value="metrics">
+                                                <BarChartIcon /> <Text ml="2">Metrics</Text>
                                             </Tabs.Trigger>
                                         </Tabs.List>
                                     </Tabs.Root>
@@ -436,7 +466,64 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                 </Flex>
                             </Flex>
 
-                            {viewMode === 'list' ? (
+
+                            {activeTab === 'metrics' ? (
+                                <Box p="4">
+                                    <Grid columns={{ initial: '1', md: '2', lg: '4' }} gap="4" mb="8">
+                                        <Card size="2" style={{ backgroundColor: 'var(--green-3)', borderColor: 'var(--green-6)' }}>
+                                            <Flex justify="between" align="center" mb="2">
+                                                <Text size="2" weight="medium" style={{ color: 'var(--green-11)' }}>Total Revenue</Text>
+                                                <BarChartIcon color="var(--green-11)" />
+                                            </Flex>
+                                            <Heading size="6" style={{ color: 'var(--green-11)' }}>{metricsData.revenue}</Heading>
+                                            <Text size="1" style={{ color: 'var(--green-10)' }}>Based on visible orders</Text>
+                                        </Card>
+                                        <Card size="2" style={{ backgroundColor: 'var(--blue-3)', borderColor: 'var(--blue-6)' }}>
+                                            <Flex justify="between" align="center" mb="2">
+                                                <Text size="2" weight="medium" style={{ color: 'var(--blue-11)' }}>Active Orders</Text>
+                                                <CubeIcon color="var(--blue-11)" />
+                                            </Flex>
+                                            <Heading size="6" style={{ color: 'var(--blue-11)' }}>{metricsData.activeOrders}</Heading>
+                                            <Text size="1" style={{ color: 'var(--blue-10)' }}>In production or pending</Text>
+                                        </Card>
+                                        <Card size="2" style={{ backgroundColor: 'var(--purple-3)', borderColor: 'var(--purple-6)' }}>
+                                            <Flex justify="between" align="center" mb="2">
+                                                <Text size="2" weight="medium" style={{ color: 'var(--purple-11)' }}>Completion Rate</Text>
+                                                <CheckCircledIcon color="var(--purple-11)" />
+                                            </Flex>
+                                            <Heading size="6" style={{ color: 'var(--purple-11)' }}>{metricsData.efficiency}%</Heading>
+                                            <Text size="1" style={{ color: 'var(--purple-10)' }}>Orders delivered successfully</Text>
+                                        </Card>
+                                        <Card size="2" style={{ backgroundColor: 'var(--orange-3)', borderColor: 'var(--orange-6)' }}>
+                                            <Flex justify="between" align="center" mb="2">
+                                                <Text size="2" weight="medium" style={{ color: 'var(--orange-11)' }}>Project Count</Text>
+                                                <ClipboardIcon color="var(--orange-11)" />
+                                            </Flex>
+                                            <Heading size="6" style={{ color: 'var(--orange-11)' }}>
+                                                {availableProjects.length > 0 && availableProjects[0] === 'All Projects' ? availableProjects.length - 1 : availableProjects.length}
+                                            </Heading>
+                                            <Text size="1" style={{ color: 'var(--orange-10)' }}>Active projects</Text>
+                                        </Card>
+                                    </Grid>
+
+                                    <Card size="3" style={{ borderRadius: '16px' }}>
+                                        <Heading size="3" mb="4">Monthly Trends</Heading>
+                                        <Box height="300px">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={salesData}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-6)" vertical={false} />
+                                                    <XAxis dataKey="name" stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} />
+                                                    <YAxis stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                                                    <RechartsTooltip
+                                                        contentStyle={{ backgroundColor: 'var(--color-panel-solid)', borderColor: 'var(--gray-6)', borderRadius: '8px', color: 'var(--gray-12)' }}
+                                                    />
+                                                    <Bar dataKey="sales" fill="var(--blue-9)" radius={[4, 4, 0, 0]} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </Box>
+                                    </Card>
+                                </Box>
+                            ) : viewMode === 'list' ? (
                                 <Table.Root>
                                     <Table.Header>
                                         <Table.Row>
@@ -643,49 +730,13 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                         </Card>
                     </Box >
 
-                    {/* Charts */}
-                    < Box style={{ gridColumn: 'span 2' }}>
-                        <Card size="3" style={{ borderRadius: '16px' }}>
-                            <Heading size="3" mb="4">Revenue Trend</Heading>
-                            <Box height="300px">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={salesData}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-6)" vertical={false} />
-                                        <XAxis dataKey="name" stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-                                        <RechartsTooltip
-                                            contentStyle={{ backgroundColor: 'var(--color-panel-solid)', borderColor: 'var(--gray-6)', borderRadius: '8px', color: 'var(--gray-12)' }}
-                                            itemStyle={{ color: 'var(--gray-12)' }}
-                                        />
-                                        <Line type="monotone" dataKey="sales" stroke="var(--accent-9)" strokeWidth={3} dot={{ r: 4, fill: 'var(--color-panel-solid)', strokeWidth: 2 }} />
-                                        <Line type="monotone" dataKey="costs" stroke="var(--gray-8)" strokeWidth={2} dot={false} strokeDasharray="5 5" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </Box>
-                        </Card>
-                    </Box >
 
-                    <Box style={{ gridColumn: 'span 1' }}>
-                        <Card size="3" style={{ borderRadius: '16px' }}>
-                            <Heading size="3" mb="4">Inventory Breakdown</Heading>
-                            <Box height="300px">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={inventoryData}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-6)" vertical={false} />
-                                        <XAxis dataKey="name" stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} />
-                                        {/* <YAxis stroke="var(--gray-9)" fontSize={12} tickLine={false} axisLine={false} /> */}
-                                        <RechartsTooltip cursor={{ fill: 'transparent' }} contentStyle={{ backgroundColor: 'var(--color-panel-solid)', borderColor: 'var(--gray-6)', borderRadius: '8px', color: 'var(--gray-12)' }} />
-                                        <Bar dataKey="value" fill="var(--indigo-9)" radius={[4, 4, 0, 0]} barSize={40} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </Box>
-                        </Card>
-                    </Box>
                 </Grid >
             </Box >
 
             {/* Modal - Track Order */}
-            < Dialog.Root open={!!trackingOrder} onOpenChange={(open) => !open && setTrackingOrder(null)}>
+            < Dialog.Root open={!!trackingOrder
+            } onOpenChange={(open) => !open && setTrackingOrder(null)}>
                 <Dialog.Content style={{ maxWidth: 700, borderRadius: '16px' }}>
                     <Dialog.Title>
                         <Flex justify="between" align="center">

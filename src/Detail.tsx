@@ -1,4 +1,4 @@
-import { Button, Card, Flex, Grid, Heading, Text, TextField, Badge, Table, IconButton, Separator, Box, Checkbox, Dialog, DropdownMenu, Avatar, RadioGroup } from '@radix-ui/themes'
+import { Button, Card, Flex, Grid, Heading, Text, TextField, Badge, Table, IconButton, Separator, Box, Checkbox, Dialog, DropdownMenu, Avatar, RadioGroup, Tabs } from '@radix-ui/themes'
 import {
     MagnifyingGlassIcon,
     ChevronDownIcon,
@@ -26,7 +26,8 @@ import {
     ExitIcon,
     MagicWandIcon,
     UpdateIcon,
-    Pencil1Icon
+    Pencil1Icon,
+    Link2Icon
 } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import * as Progress from '@radix-ui/react-progress'
@@ -50,6 +51,44 @@ const items = [
     { id: "SKU-OFF-2025-006", name: "Reception Lounge Chair", category: "Lobby Series", properties: "Velvet / Teal", stock: 95, status: "In Stock" as const, statusColor: 'gray' as const },
     { id: "SKU-OFF-2025-007", name: "Drafting Stool High", category: "Studio Series", properties: "Mesh / Black", stock: 340, status: "In Stock" as const, statusColor: 'gray' as const },
     { id: "SKU-OFF-2025-008", name: "Bench Seating 3-Seat", category: "Waiting Series", properties: "Metal / Chrome", stock: 28, status: "Low Stock" as const, statusColor: 'orange' as const },
+]
+
+const messages = [
+    {
+        id: 1,
+        sender: "System",
+        avatar: "",
+        content: "Order #ORD-2055 has been flagged for manual review due to stock discrepancy.",
+        time: "2 hours ago",
+        type: "system",
+    },
+    {
+        id: 2,
+        sender: "AI Assistant",
+        avatar: "AI",
+        content: "I've detected a 5-item discrepancy between local and remote warehouse counts for SKU-OFF-2025-003. Recommended action: Synchronize with Warehouse DB or perform manual count.",
+        time: "2 hours ago",
+        type: "ai",
+    },
+    {
+        id: 3,
+        sender: "Sarah Chen",
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+        content: "@InventoryManager I'm verifying the physical stock in Zone B. Will update shortly.",
+        time: "1 hour ago",
+        type: "user",
+    }
+]
+
+const collaborators = [
+    { name: "Sarah Chen", role: "Logistics Mgr", status: "online", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" },
+    { name: "Mike Ross", role: "Warehouse Lead", status: "offline", avatar: "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" },
+    { name: "AI Agent", role: "System Bot", status: "online", avatar: "AI" },
+]
+
+const documents = [
+    { name: "Packing_Slip_2055.pdf", size: "245 KB", uploaded: "Jan 12, 2025" },
+    { name: "Invoice_INV-8992.pdf", size: "1.2 MB", uploaded: "Jan 12, 2025" },
 ]
 
 export default function Detail({ onBack }: { onBack: () => void }) {
@@ -130,8 +169,8 @@ export default function Detail({ onBack }: { onBack: () => void }) {
 
                     {/* Nav Items */}
                     <Flex gap="1">
-                        <NavItem icon={<HomeIcon width="16" height="16" />} label="Overview" />
-                        <NavItem icon={<CubeIcon width="16" height="16" />} label="Inventory" active />
+                        <NavItem icon={<HomeIcon width="16" height="16" />} label="Overview" active />
+                        <NavItem icon={<CubeIcon width="16" height="16" />} label="Inventory" />
                         <NavItem icon={<BarChartIcon width="16" height="16" />} label="Production" />
                         <NavItem icon={<ClipboardIcon width="16" height="16" />} label="Orders" />
                     </Flex>
@@ -462,278 +501,443 @@ export default function Detail({ onBack }: { onBack: () => void }) {
 
                     {/* Right Panel: Details */}
                     <Box style={{ gridColumn: 'span 4', height: '100%' }}>
-                        <Card size="3" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <Flex justify="between" align="center" mb="4" pb="4" style={{ borderBottom: '1px solid var(--gray-5)' }}>
-                                <Heading size="3">Item Details</Heading>
-                                <Flex align="center" gap="1">
-                                    <IconButton variant="ghost" color="gray" style={{ cursor: 'pointer' }} onClick={() => setIsDocumentModalOpen(true)}><Pencil1Icon /></IconButton>
-                                    <Button size="1" variant="ghost" color="gray"><DownloadIcon /></Button>
-                                    <Button size="1" variant="ghost" color="gray"><PaperPlaneIcon /></Button>
-                                    <Button size="1" variant="ghost" style={{ color: 'var(--purple-9)', position: 'relative' }} onClick={() => setIsAiOpen(true)}>
-                                        <MagicWandIcon />
-                                        <Box style={{ position: 'absolute', top: '2px', right: '2px', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--purple-9)', border: '1px solid var(--color-background)' }} />
-                                    </Button>
-                                    <Separator orientation="vertical" style={{ height: '16px', margin: '0 4px' }} />
-                                    <Button size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></Button>
-                                </Flex>
-                            </Flex>
+                        <Card size="3" style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: 0 }}>
+                            <Tabs.Root defaultValue="order-info" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <Box px="4" pt="4" pb="2" style={{ borderBottom: '1px solid var(--gray-5)' }}>
+                                    <Tabs.List>
+                                        <Tabs.Trigger value="order-info">Order Info</Tabs.Trigger>
+                                        <Tabs.Trigger value="activity">Activity Stream</Tabs.Trigger>
+                                    </Tabs.List>
+                                </Box>
 
-                            <Flex direction="column" gap="5" style={{ overflow: 'auto' }}>
+                                <Box style={{ flex: 1, overflow: 'hidden' }}>
+                                    <Tabs.Content value="order-info" style={{ height: '100%', overflow: 'auto' }}>
+                                        <Box p="4">
+                                            <Flex justify="between" align="center" mb="4" pb="4" style={{ borderBottom: '1px solid var(--gray-5)' }}>
+                                                <Heading size="3">Item Details</Heading>
+                                                <Flex align="center" gap="1">
+                                                    <IconButton variant="ghost" color="gray" style={{ cursor: 'pointer' }} onClick={() => setIsDocumentModalOpen(true)}><Pencil1Icon /></IconButton>
+                                                    <Button size="1" variant="ghost" color="gray"><DownloadIcon /></Button>
+                                                    <Button size="1" variant="ghost" color="gray"><PaperPlaneIcon /></Button>
+                                                    <Button size="1" variant="ghost" style={{ color: 'var(--purple-9)', position: 'relative' }} onClick={() => setIsAiOpen(true)}>
+                                                        <MagicWandIcon />
+                                                        <Box style={{ position: 'absolute', top: '2px', right: '2px', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--purple-9)', border: '1px solid var(--color-background)' }} />
+                                                    </Button>
+                                                    <Separator orientation="vertical" style={{ height: '16px', margin: '0 4px' }} />
+                                                    <Button size="1" variant="ghost" color="gray"><DotsHorizontalIcon /></Button>
+                                                </Flex>
+                                            </Flex>
 
+                                            <Flex direction="column" gap="5">
+                                                {/* AI Side Panel Section */}
+                                                {(selectedItem as any).aiStatus && (
+                                                    <Box>
+                                                        <Flex
+                                                            align="center"
+                                                            justify="between"
+                                                            mb="2"
+                                                            style={{ cursor: 'pointer', userSelect: 'none' }}
+                                                            onClick={() => toggleSection('aiSuggestions')}
+                                                        >
+                                                            <Flex align="center" gap="2">
+                                                                <MagicWandIcon style={{ color: 'var(--purple-9)' }} />
+                                                                <Text size="1" weight="bold" style={{ color: 'var(--gray-12)' }}>AI Suggestions</Text>
+                                                                <Box style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
+                                                                    <Box style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', backgroundColor: 'var(--purple-9)', opacity: 0.75, animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
+                                                                    <Box style={{ position: 'relative', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--purple-9)' }} />
+                                                                </Box>
+                                                            </Flex>
+                                                            <ChevronDownIcon style={{ transform: sections.aiSuggestions ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                                                        </Flex>
 
-                                {/* AI Side Panel Section */}
-                                {(selectedItem as any).aiStatus && (
-                                    <Box>
-                                        <Flex
-                                            align="center"
-                                            justify="between"
-                                            mb="2"
-                                            style={{ cursor: 'pointer', userSelect: 'none' }}
-                                            onClick={() => toggleSection('aiSuggestions')}
-                                        >
-                                            <Flex align="center" gap="2">
-                                                <MagicWandIcon style={{ color: 'var(--purple-9)' }} />
-                                                <Text size="1" weight="bold" style={{ color: 'var(--gray-12)' }}>AI Suggestions</Text>
-                                                <Box style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
-                                                    <Box style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', backgroundColor: 'var(--purple-9)', opacity: 0.75, animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
-                                                    <Box style={{ position: 'relative', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--purple-9)' }} />
+                                                        {sections.aiSuggestions && (
+                                                            <>
+                                                                {(selectedItem as any).aiStatus === 'info' ? (
+                                                                    <Card variant="surface" style={{ backgroundColor: 'var(--blue-3)', borderColor: 'var(--blue-6)' }}>
+                                                                        <Text size="2" weight="bold" style={{ color: 'var(--blue-11)', marginBottom: '8px', display: 'block' }}>Optimization Opportunity</Text>
+                                                                        <Flex direction="column" gap="2">
+
+                                                                            {/* Option 1 */}
+                                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--gray-6)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                                                <Flex gap="2">
+                                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--gray-8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                                        <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'transparent' }} />
+                                                                                    </Box>
+                                                                                    <Box>
+                                                                                        <Text as="div" size="2" weight="medium">Standard {selectedItem.name}</Text>
+                                                                                        <Text as="div" size="1" color="gray">Listed Price</Text>
+                                                                                    </Box>
+                                                                                </Flex>
+                                                                            </Box>
+
+                                                                            {/* Option 2 */}
+                                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--green-8)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                                                <Flex gap="2">
+                                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--green-9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                                        <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--green-9)' }} />
+                                                                                    </Box>
+                                                                                    <Box>
+                                                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--green-11)' }}>Eco-Friendly {selectedItem.name}</Text>
+                                                                                        <Text as="div" size="1" color="gray">-15% Carbon Footprint</Text>
+                                                                                    </Box>
+                                                                                </Flex>
+                                                                            </Box>
+
+                                                                            {/* Option 3 */}
+                                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--gray-6)', borderRadius: '4px', cursor: 'pointer' }}>
+                                                                                <Flex gap="2">
+                                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--gray-8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+                                                                                    <Box>
+                                                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--purple-11)' }}>Premium {selectedItem.name}</Text>
+                                                                                        <Text as="div" size="1" color="gray">+ High Durability Finish</Text>
+                                                                                    </Box>
+                                                                                </Flex>
+                                                                            </Box>
+
+                                                                            <Button style={{ width: '100%', marginTop: '4px', backgroundColor: 'var(--blue-9)', color: 'white', cursor: 'pointer' }}>Apply Selection</Button>
+                                                                        </Flex>
+                                                                    </Card>
+                                                                ) : (
+                                                                    /* Data Fix / Warning */
+                                                                    <Card variant="surface" style={{ backgroundColor: 'var(--orange-3)', borderColor: 'var(--orange-6)' }}>
+                                                                        <Flex gap="3">
+                                                                            <ExclamationTriangleIcon style={{ color: 'var(--orange-9)', width: '20px', height: '20px', flexShrink: 0 }} />
+                                                                            <Box style={{ width: '100%' }}>
+                                                                                <Flex justify="between" align="start">
+                                                                                    <Box>
+                                                                                        <Text as="div" size="2" weight="bold" style={{ color: 'var(--orange-11)' }}>Database Discrepancy</Text>
+                                                                                        <Text as="div" size="1" style={{ color: 'var(--orange-10)', marginTop: '4px' }}>Stock count mismatch detected.</Text>
+                                                                                    </Box>
+                                                                                    {!isManualFixMode && (
+                                                                                        <Button
+                                                                                            size="1"
+                                                                                            variant="ghost"
+                                                                                            style={{ color: 'var(--orange-11)', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                                            onClick={() => setIsManualFixMode(true)}
+                                                                                        >
+                                                                                            Resolve Manually
+                                                                                        </Button>
+                                                                                    )}
+                                                                                </Flex>
+
+                                                                                {!isManualFixMode ? (
+                                                                                    <>
+                                                                                        <Flex align="center" justify="between" mt="2" mb="3" px="2" style={{ backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '4px', padding: '8px' }}>
+                                                                                            <Box style={{ textAlign: 'center' }}>
+                                                                                                <Text as="div" size="1" color="gray" style={{ textTransform: 'uppercase' }}>Local</Text>
+                                                                                                <Text as="div" size="3" weight="bold">{selectedItem.stock}</Text>
+                                                                                            </Box>
+                                                                                            <UpdateIcon style={{ color: 'var(--gray-8)' }} />
+                                                                                            <Box style={{ textAlign: 'center' }}>
+                                                                                                <Text as="div" size="1" color="gray" style={{ textTransform: 'uppercase' }}>Remote</Text>
+                                                                                                <Text as="div" size="3" weight="bold" style={{ color: 'var(--orange-11)' }}>{(selectedItem.stock || 0) + 5}</Text>
+                                                                                            </Box>
+                                                                                        </Flex>
+
+                                                                                        <Button style={{ width: '100%', backgroundColor: 'var(--orange-9)', color: 'white', cursor: 'pointer' }}>Auto-Sync to Warehouse</Button>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <Box mt="3">
+                                                                                        <RadioGroup.Root value={resolutionMethod} onValueChange={(val: any) => setResolutionMethod(val)}>
+                                                                                            <Flex direction="column" gap="2">
+                                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'local' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'local' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
+                                                                                                    <RadioGroup.Item value="local" style={{ cursor: 'pointer' }}>
+                                                                                                        <Box ml="2">
+                                                                                                            <Text size="2" weight="bold">Keep Local Value</Text>
+                                                                                                            <Text as="div" size="1" color="gray">{selectedItem.stock} items</Text>
+                                                                                                        </Box>
+                                                                                                    </RadioGroup.Item>
+                                                                                                </Box>
+                                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'remote' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'remote' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
+                                                                                                    <RadioGroup.Item value="remote" style={{ cursor: 'pointer' }}>
+                                                                                                        <Box ml="2">
+                                                                                                            <Text size="2" weight="bold">Accept Warehouse Value</Text>
+                                                                                                            <Text as="div" size="1" color="gray">{(selectedItem.stock || 0) + 5} items</Text>
+                                                                                                        </Box>
+                                                                                                    </RadioGroup.Item>
+                                                                                                </Box>
+                                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'custom' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'custom' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
+                                                                                                    <RadioGroup.Item value="custom" style={{ cursor: 'pointer' }}>
+                                                                                                        <Box ml="2">
+                                                                                                            <Text size="2" weight="bold">Custom Value</Text>
+                                                                                                            {resolutionMethod === 'custom' && (
+                                                                                                                <TextField.Root
+                                                                                                                    size="1"
+                                                                                                                    placeholder="#"
+                                                                                                                    style={{ marginTop: '4px', width: '80px' }}
+                                                                                                                    value={customValue}
+                                                                                                                    onChange={(e) => setCustomValue(e.target.value)}
+                                                                                                                />
+                                                                                                            )}
+                                                                                                        </Box>
+                                                                                                    </RadioGroup.Item>
+                                                                                                </Box>
+                                                                                            </Flex>
+                                                                                        </RadioGroup.Root>
+
+                                                                                        <Flex gap="2" mt="3">
+                                                                                            <Button variant="soft" color="gray" style={{ flex: 1, cursor: 'pointer' }} onClick={() => setIsManualFixMode(false)}>Cancel</Button>
+                                                                                            <Button
+                                                                                                style={{ flex: 1, backgroundColor: 'var(--orange-9)', color: 'white', cursor: 'pointer' }}
+                                                                                                onClick={() => {
+                                                                                                    alert(`Fixed with: ${resolutionMethod === 'custom' ? customValue : (resolutionMethod === 'remote' ? (selectedItem.stock + 5) : selectedItem.stock)}`)
+                                                                                                    setIsManualFixMode(false)
+                                                                                                }}
+                                                                                            >
+                                                                                                Confirm Fix
+                                                                                            </Button>
+                                                                                        </Flex>
+                                                                                    </Box>
+                                                                                )}
+                                                                            </Box>
+                                                                        </Flex>
+                                                                    </Card>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </Box>
+                                                )}
+
+                                                {/* Product Overview */}
+                                                <Flex direction="column" gap="2">
+                                                    <Flex
+                                                        justify="between"
+                                                        align="center"
+                                                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                                                        onClick={() => toggleSection('productOverview')}
+                                                    >
+                                                        <Text size="2" weight="medium">Product Overview</Text>
+                                                        <ChevronDownIcon style={{ transform: sections.productOverview ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                                                    </Flex>
+                                                    {sections.productOverview && (
+                                                        <>
+                                                            <Box style={{ aspectRatio: '16/9', backgroundColor: 'var(--gray-4)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <ComponentPlaceholderIcon width="48" height="48" color="gray" />
+                                                            </Box>
+                                                            <Box>
+                                                                <Heading size="3">{selectedItem.name}</Heading>
+                                                                <Text size="1" color="gray">{selectedItem.id}</Text>
+                                                                <Flex gap="2" mt="2">
+                                                                    <Badge variant="soft" color={selectedItem.statusColor}>{selectedItem.status}</Badge>
+                                                                    <Badge variant="outline" color="gray">Premium</Badge>
+                                                                </Flex>
+                                                            </Box>
+                                                        </>
+                                                    )}
+                                                </Flex>
+
+                                                <Separator size="4" />
+
+                                                {/* Lifecycle */}
+                                                <Flex direction="column" gap="2">
+                                                    <Flex
+                                                        justify="between"
+                                                        align="center"
+                                                        style={{ cursor: 'pointer', userSelect: 'none' }}
+                                                        onClick={() => toggleSection('lifecycle')}
+                                                    >
+                                                        <Text size="2" weight="medium">Lifecycle Status</Text>
+                                                        <ChevronDownIcon style={{ transform: sections.lifecycle ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                                                    </Flex>
+                                                    {sections.lifecycle && (
+                                                        <Box style={{ paddingLeft: '16px', borderLeft: '1px solid var(--gray-4)' }}>
+                                                            {['Material Sourced', 'Manufacturing', 'Quality Control'].map((step, i) => (
+                                                                <Box key={i} position="relative" pb="4">
+                                                                    <Box style={{ position: 'absolute', left: '-20.5px', top: '0', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--gray-12)' }} />
+                                                                    <Text as="div" size="2" weight="medium">{step}</Text>
+                                                                    <Text as="div" size="1" color="gray">Completed Jan {5 + i * 5}, 2025</Text>
+                                                                </Box>
+                                                            ))}
+                                                            <Box position="relative" pb="4">
+                                                                <Box style={{ position: 'absolute', left: '-22.5px', top: '0', width: '8px', height: '8px', borderRadius: '50%', border: '2px solid var(--gray-12)', backgroundColor: 'white' }} />
+                                                                <Text as="div" size="2" weight="medium">Warehouse Storage</Text>
+                                                                <Text as="div" size="1" color="gray">In Progress</Text>
+                                                            </Box>
+                                                        </Box>
+                                                    )}
+                                                </Flex>
+
+                                                <Separator size="4" />
+
+                                                {/* Action Required */}
+                                                <Flex direction="column" gap="2">
+                                                    <Text size="2" weight="medium">Action Required</Text>
+                                                    <Box style={{ paddingLeft: '16px', borderLeft: '1px solid var(--gray-4)' }}>
+                                                        <Flex direction="column" gap="2">
+                                                            <Button
+                                                                style={{ width: '100%', backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)', cursor: 'pointer' }}
+                                                                onClick={() => setIsPOModalOpen(true)}
+                                                            >
+                                                                Create Purchase Order
+                                                            </Button>
+                                                            <Button variant="outline" color="gray" style={{ width: '100%', cursor: 'pointer' }}>
+                                                                Send Acknowledgment
+                                                            </Button>
+                                                        </Flex>
+                                                    </Box>
+                                                </Flex>
+                                            </Flex>
+                                        </Box>
+                                    </Tabs.Content>
+
+                                    <Tabs.Content value="activity" style={{ height: '100%' }}>
+                                        <Flex style={{ height: '100%' }}>
+                                            {/* Chat Area */}
+                                            <Flex direction="column" style={{ flex: 1, borderRight: '1px solid var(--gray-5)' }}>
+                                                <Box p="4" style={{ flex: 1, overflowY: 'auto' }}>
+                                                    <Flex direction="column" gap="4">
+                                                        <Flex justify="center">
+                                                            <Badge variant="surface" color="gray" radius="full">
+                                                                Today, 9:23 AM
+                                                            </Badge>
+                                                        </Flex>
+
+                                                        {messages.map((msg) => (
+                                                            <Flex key={msg.id} gap="3" justify={msg.type === 'user' ? 'end' : 'start'}>
+                                                                {msg.type !== 'user' && (
+                                                                    msg.type === 'system' ? (
+                                                                        <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--gray-4)' }}>
+                                                                            <UpdateIcon />
+                                                                        </Flex>
+                                                                    ) : (
+                                                                        <Avatar
+                                                                            size="2"
+                                                                            fallback={msg.type === 'ai' ? <MagicWandIcon /> : <PersonIcon />}
+                                                                            radius="full"
+                                                                            style={msg.type === 'ai' ? { backgroundColor: 'var(--purple-9)', color: 'white' } : {}}
+                                                                            src={msg.avatar}
+                                                                        />
+                                                                    )
+                                                                )}
+
+                                                                <Box style={{ maxWidth: '85%' }}>
+                                                                    {msg.type === 'system' ? (
+                                                                        <Text size="2" color="gray">
+                                                                            <Text weight="bold">{msg.sender}</Text> {msg.content.replace('System ', '')}
+                                                                        </Text>
+                                                                    ) : (
+                                                                        <Card size="1" style={{ backgroundColor: msg.type === 'user' ? 'var(--gray-4)' : msg.type === 'ai' ? 'var(--purple-3)' : 'var(--card-background-color)' }}>
+                                                                            <Text size="2" weight="bold" style={{ display: 'block', marginBottom: '4px', color: msg.type === 'ai' ? 'var(--purple-11)' : 'inherit' }}>
+                                                                                {msg.sender}
+                                                                            </Text>
+                                                                            <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                                                                                {msg.content}
+                                                                            </Text>
+                                                                            {msg.type === 'ai' && (
+                                                                                <Flex gap="2" mt="2">
+                                                                                    <Button size="1" variant="soft" color="purple">Create Task</Button>
+                                                                                    <Button size="1" variant="ghost" color="purple">Dismiss</Button>
+                                                                                </Flex>
+                                                                            )}
+                                                                        </Card>
+                                                                    )}
+                                                                </Box>
+
+                                                                {msg.type === 'user' && (
+                                                                    <Avatar
+                                                                        size="2"
+                                                                        fallback="JD"
+                                                                        radius="full"
+                                                                        color="indigo"
+                                                                        src="/user-avatar.png"
+                                                                    />
+                                                                )}
+                                                            </Flex>
+                                                        ))}
+                                                    </Flex>
+                                                </Box>
+
+                                                {/* Input Area */}
+                                                <Box p="4" style={{ backgroundColor: 'var(--gray-2)', borderTop: '1px solid var(--gray-5)' }}>
+                                                    <Flex gap="3">
+                                                        <Box style={{ position: 'relative', flex: 1 }}>
+                                                            <TextField.Root placeholder="Type a message or use @ to mention..." variant="soft" radius="large" size="3">
+                                                                <TextField.Slot></TextField.Slot>
+                                                                <TextField.Slot>
+                                                                    <IconButton variant="ghost" color="gray" radius="full" size="1">
+                                                                        <Link2Icon width="16" height="16" />
+                                                                    </IconButton>
+                                                                </TextField.Slot>
+                                                            </TextField.Root>
+                                                        </Box>
+                                                        <IconButton size="3" variant="solid" color="gray" radius="large">
+                                                            <PaperPlaneIcon width="18" height="18" />
+                                                        </IconButton>
+                                                    </Flex>
                                                 </Box>
                                             </Flex>
-                                            <ChevronDownIcon style={{ transform: sections.aiSuggestions ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
-                                        </Flex>
 
-                                        {sections.aiSuggestions && (
-                                            <>
-                                                {(selectedItem as any).aiStatus === 'info' ? (
-                                                    <Card variant="surface" style={{ backgroundColor: 'var(--blue-3)', borderColor: 'var(--blue-6)' }}>
-                                                        <Text size="2" weight="bold" style={{ color: 'var(--blue-11)', marginBottom: '8px', display: 'block' }}>Optimization Opportunity</Text>
-                                                        <Flex direction="column" gap="2">
-
-                                                            {/* Option 1 */}
-                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--gray-6)', borderRadius: '4px', cursor: 'pointer' }}>
-                                                                <Flex gap="2">
-                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--gray-8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                        <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'transparent' }} />
+                                            {/* Right Sidebar: Collaborators & Docs */}
+                                            <Flex direction="column" style={{ width: '300px', borderLeft: '1px solid var(--gray-5)', backgroundColor: 'var(--gray-1)' }}>
+                                                {/* Collaborators */}
+                                                <Box p="4" style={{ borderBottom: '1px solid var(--gray-5)' }}>
+                                                    <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        Collaborators
+                                                    </Text>
+                                                    <Box mt="3">
+                                                        <Flex direction="column" gap="3">
+                                                            {collaborators.map((collaborator, i) => (
+                                                                <Flex key={i} align="center" gap="3">
+                                                                    <Box position="relative">
+                                                                        <Avatar
+                                                                            size="2"
+                                                                            fallback={collaborator.name.charAt(0)}
+                                                                            radius="full"
+                                                                            src={collaborator.avatar}
+                                                                        />
+                                                                        <Box style={{
+                                                                            position: 'absolute',
+                                                                            bottom: -2,
+                                                                            right: -2,
+                                                                            width: 8,
+                                                                            height: 8,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: collaborator.status === 'online' ? 'var(--green-9)' : 'var(--gray-8)',
+                                                                            border: '2px solid white'
+                                                                        }} />
                                                                     </Box>
                                                                     <Box>
-                                                                        <Text as="div" size="2" weight="medium">Standard {selectedItem.name}</Text>
-                                                                        <Text as="div" size="1" color="gray">Listed Price</Text>
+                                                                        <Text as="div" size="2" weight="medium">{collaborator.name}</Text>
+                                                                        <Text as="div" size="1" color="gray">{collaborator.role}</Text>
                                                                     </Box>
                                                                 </Flex>
-                                                            </Box>
-
-                                                            {/* Option 2 */}
-                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--green-8)', borderRadius: '4px', cursor: 'pointer' }}>
-                                                                <Flex gap="2">
-                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--green-9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                        <Box style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--green-9)' }} />
-                                                                    </Box>
-                                                                    <Box>
-                                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--green-11)' }}>Eco-Friendly {selectedItem.name}</Text>
-                                                                        <Text as="div" size="1" color="gray">-15% Carbon Footprint</Text>
-                                                                    </Box>
-                                                                </Flex>
-                                                            </Box>
-
-                                                            {/* Option 3 */}
-                                                            <Box style={{ padding: '8px', backgroundColor: 'var(--color-background)', border: '1px solid var(--gray-6)', borderRadius: '4px', cursor: 'pointer' }}>
-                                                                <Flex gap="2">
-                                                                    <Box style={{ marginTop: '2px', width: '12px', height: '12px', borderRadius: '50%', border: '1px solid var(--gray-8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
-                                                                    <Box>
-                                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--purple-11)' }}>Premium {selectedItem.name}</Text>
-                                                                        <Text as="div" size="1" color="gray">+ High Durability Finish</Text>
-                                                                    </Box>
-                                                                </Flex>
-                                                            </Box>
-
-                                                            <Button style={{ width: '100%', marginTop: '4px', backgroundColor: 'var(--blue-9)', color: 'white', cursor: 'pointer' }}>Apply Selection</Button>
+                                                            ))}
                                                         </Flex>
-                                                    </Card>
-                                                ) : (
-                                                    /* Data Fix / Warning */
-                                                    <Card variant="surface" style={{ backgroundColor: 'var(--orange-3)', borderColor: 'var(--orange-6)' }}>
-                                                        <Flex gap="3">
-                                                            <ExclamationTriangleIcon style={{ color: 'var(--orange-9)', width: '20px', height: '20px', flexShrink: 0 }} />
-                                                            <Box style={{ width: '100%' }}>
-                                                                <Flex justify="between" align="start">
-                                                                    <Box>
-                                                                        <Text as="div" size="2" weight="bold" style={{ color: 'var(--orange-11)' }}>Database Discrepancy</Text>
-                                                                        <Text as="div" size="1" style={{ color: 'var(--orange-10)', marginTop: '4px' }}>Stock count mismatch detected.</Text>
-                                                                    </Box>
-                                                                    {!isManualFixMode && (
-                                                                        <Button
-                                                                            size="1"
-                                                                            variant="ghost"
-                                                                            style={{ color: 'var(--orange-11)', textDecoration: 'underline', cursor: 'pointer' }}
-                                                                            onClick={() => setIsManualFixMode(true)}
-                                                                        >
-                                                                            Resolve Manually
-                                                                        </Button>
-                                                                    )}
-                                                                </Flex>
-
-                                                                {!isManualFixMode ? (
-                                                                    <>
-                                                                        <Flex align="center" justify="between" mt="2" mb="3" px="2" style={{ backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '4px', padding: '8px' }}>
-                                                                            <Box style={{ textAlign: 'center' }}>
-                                                                                <Text as="div" size="1" color="gray" style={{ textTransform: 'uppercase' }}>Local</Text>
-                                                                                <Text as="div" size="3" weight="bold">{selectedItem.stock}</Text>
-                                                                            </Box>
-                                                                            <UpdateIcon style={{ color: 'var(--gray-8)' }} />
-                                                                            <Box style={{ textAlign: 'center' }}>
-                                                                                <Text as="div" size="1" color="gray" style={{ textTransform: 'uppercase' }}>Remote</Text>
-                                                                                <Text as="div" size="3" weight="bold" style={{ color: 'var(--orange-11)' }}>{(selectedItem.stock || 0) + 5}</Text>
-                                                                            </Box>
-                                                                        </Flex>
-
-                                                                        <Button style={{ width: '100%', backgroundColor: 'var(--orange-9)', color: 'white', cursor: 'pointer' }}>Auto-Sync to Warehouse</Button>
-                                                                    </>
-                                                                ) : (
-                                                                    <Box mt="3">
-                                                                        <RadioGroup.Root value={resolutionMethod} onValueChange={(val: any) => setResolutionMethod(val)}>
-                                                                            <Flex direction="column" gap="2">
-                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'local' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'local' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
-                                                                                    <RadioGroup.Item value="local" style={{ cursor: 'pointer' }}>
-                                                                                        <Box ml="2">
-                                                                                            <Text size="2" weight="bold">Keep Local Value</Text>
-                                                                                            <Text as="div" size="1" color="gray">{selectedItem.stock} items</Text>
-                                                                                        </Box>
-                                                                                    </RadioGroup.Item>
-                                                                                </Box>
-                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'remote' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'remote' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
-                                                                                    <RadioGroup.Item value="remote" style={{ cursor: 'pointer' }}>
-                                                                                        <Box ml="2">
-                                                                                            <Text size="2" weight="bold">Accept Warehouse Value</Text>
-                                                                                            <Text as="div" size="1" color="gray">{(selectedItem.stock || 0) + 5} items</Text>
-                                                                                        </Box>
-                                                                                    </RadioGroup.Item>
-                                                                                </Box>
-                                                                                <Box style={{ padding: '8px', backgroundColor: resolutionMethod === 'custom' ? 'var(--color-background)' : 'transparent', border: resolutionMethod === 'custom' ? '1px solid var(--orange-9)' : '1px solid transparent', borderRadius: '4px' }}>
-                                                                                    <RadioGroup.Item value="custom" style={{ cursor: 'pointer' }}>
-                                                                                        <Box ml="2">
-                                                                                            <Text size="2" weight="bold">Custom Value</Text>
-                                                                                            {resolutionMethod === 'custom' && (
-                                                                                                <TextField.Root
-                                                                                                    size="1"
-                                                                                                    placeholder="#"
-                                                                                                    style={{ marginTop: '4px', width: '80px' }}
-                                                                                                    value={customValue}
-                                                                                                    onChange={(e) => setCustomValue(e.target.value)}
-                                                                                                />
-                                                                                            )}
-                                                                                        </Box>
-                                                                                    </RadioGroup.Item>
-                                                                                </Box>
-                                                                            </Flex>
-                                                                        </RadioGroup.Root>
-
-                                                                        <Flex gap="2" mt="3">
-                                                                            <Button variant="soft" color="gray" style={{ flex: 1, cursor: 'pointer' }} onClick={() => setIsManualFixMode(false)}>Cancel</Button>
-                                                                            <Button
-                                                                                style={{ flex: 1, backgroundColor: 'var(--orange-9)', color: 'white', cursor: 'pointer' }}
-                                                                                onClick={() => {
-                                                                                    alert(`Fixed with: ${resolutionMethod === 'custom' ? customValue : (resolutionMethod === 'remote' ? (selectedItem.stock + 5) : selectedItem.stock)}`)
-                                                                                    setIsManualFixMode(false)
-                                                                                }}
-                                                                            >
-                                                                                Confirm Fix
-                                                                            </Button>
-                                                                        </Flex>
-                                                                    </Box>
-                                                                )}
-                                                            </Box>
-                                                        </Flex>
-                                                    </Card>
-                                                )}
-                                            </>
-                                        )}
-                                    </Box>
-                                )}
-
-
-
-                                {/* Product Overview */}
-                                <Flex direction="column" gap="2">
-                                    <Flex
-                                        justify="between"
-                                        align="center"
-                                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                                        onClick={() => toggleSection('productOverview')}
-                                    >
-                                        <Text size="2" weight="medium">Product Overview</Text>
-                                        <ChevronDownIcon style={{ transform: sections.productOverview ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
-                                    </Flex>
-                                    {sections.productOverview && (
-                                        <>
-                                            <Box style={{ aspectRatio: '16/9', backgroundColor: 'var(--gray-4)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <ComponentPlaceholderIcon width="48" height="48" color="gray" />
-                                            </Box>
-                                            <Box>
-                                                <Heading size="3">{selectedItem.name}</Heading>
-                                                <Text size="1" color="gray">{selectedItem.id}</Text>
-                                                <Flex gap="2" mt="2">
-                                                    <Badge variant="soft" color={selectedItem.statusColor}>{selectedItem.status}</Badge>
-                                                    <Badge variant="outline" color="gray">Premium</Badge>
-                                                </Flex>
-                                            </Box>
-                                        </>
-                                    )}
-                                </Flex>
-
-                                <Separator size="4" />
-
-                                {/* Lifecycle */}
-                                <Flex direction="column" gap="2">
-                                    <Flex
-                                        justify="between"
-                                        align="center"
-                                        style={{ cursor: 'pointer', userSelect: 'none' }}
-                                        onClick={() => toggleSection('lifecycle')}
-                                    >
-                                        <Text size="2" weight="medium">Lifecycle Status</Text>
-                                        <ChevronDownIcon style={{ transform: sections.lifecycle ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }} />
-                                    </Flex>
-                                    {sections.lifecycle && (
-                                        <Box style={{ paddingLeft: '16px', borderLeft: '1px solid var(--gray-4)' }}>
-                                            {['Material Sourced', 'Manufacturing', 'Quality Control'].map((step, i) => (
-                                                <Box key={i} position="relative" pb="4">
-                                                    <Box style={{ position: 'absolute', left: '-20.5px', top: '0', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--gray-12)' }} />
-                                                    <Text as="div" size="2" weight="medium">{step}</Text>
-                                                    <Text as="div" size="1" color="gray">Completed Jan {5 + i * 5}, 2025</Text>
+                                                        <Button variant="ghost" style={{ marginTop: '12px', paddingLeft: 0, justifyContent: 'flex-start' }}>
+                                                            <PlusIcon /> Invite New
+                                                        </Button>
+                                                    </Box>
                                                 </Box>
-                                            ))}
-                                            <Box position="relative" pb="4">
-                                                <Box style={{ position: 'absolute', left: '-22.5px', top: '0', width: '8px', height: '8px', borderRadius: '50%', border: '2px solid var(--gray-12)', backgroundColor: 'white' }} />
-                                                <Text as="div" size="2" weight="medium">Warehouse Storage</Text>
-                                                <Text as="div" size="1" color="gray">In Progress</Text>
-                                            </Box>
-                                        </Box>
-                                    )}
-                                </Flex>
 
-                                <Separator size="4" />
-
-                                {/* Action Required */}
-                                <Flex direction="column" gap="2">
-                                    <Text size="2" weight="medium">Action Required</Text>
-                                    <Box style={{ paddingLeft: '16px', borderLeft: '1px solid var(--gray-4)' }}>
-                                        <Flex direction="column" gap="2">
-                                            <Button
-                                                style={{ width: '100%', backgroundColor: 'var(--gray-12)', color: 'var(--gray-1)', cursor: 'pointer' }}
-                                                onClick={() => setIsPOModalOpen(true)}
-                                            >
-                                                Create Purchase Order
-                                            </Button>
-                                            <Button variant="outline" color="gray" style={{ width: '100%', cursor: 'pointer' }}>
-                                                Send Acknowledgment
-                                            </Button>
+                                                {/* Shared Docs */}
+                                                <Box p="4" style={{ flex: 1 }}>
+                                                    <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        Shared Documents
+                                                    </Text>
+                                                    <Box mt="3">
+                                                        <Flex direction="column" gap="2">
+                                                            {documents.map((doc, i) => (
+                                                                <Card key={i} variant="ghost" style={{ padding: '8px', cursor: 'pointer' }} className="hover:bg-gray-3">
+                                                                    <Flex align="center" gap="3">
+                                                                        <FileTextIcon color="var(--blue-9)" width="20" height="20" />
+                                                                        <Box style={{ overflow: 'hidden' }}>
+                                                                            <Text size="2" weight="medium" style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</Text>
+                                                                            <Text size="1" color="gray">{doc.size} • {doc.uploaded}</Text>
+                                                                        </Box>
+                                                                    </Flex>
+                                                                </Card>
+                                                            ))}
+                                                        </Flex>
+                                                        <Button variant="outline" style={{ marginTop: '12px', width: '100%', borderStyle: 'dashed' }}>
+                                                            <DownloadIcon /> Upload File
+                                                        </Button>
+                                                    </Box>
+                                                </Box>
+                                            </Flex>
                                         </Flex>
-                                    </Box>
-                                </Flex>
-
-
-
-                            </Flex>
+                                    </Tabs.Content>
+                                </Box>
+                            </Tabs.Root>
                         </Card>
                     </Box>
                 </Grid>
