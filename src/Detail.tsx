@@ -27,7 +27,9 @@ import {
     MagicWandIcon,
     UpdateIcon,
     Pencil1Icon,
-    Link2Icon
+    Link2Icon,
+    CheckIcon,
+    ArrowRightIcon
 } from '@radix-ui/react-icons'
 import { useState } from 'react'
 import * as Progress from '@radix-ui/react-progress'
@@ -290,9 +292,9 @@ export default function Detail({ onBack }: { onBack: () => void }) {
             </Flex>
 
             {/* Main Content */}
-            <Flex direction="column" p="5" gap="5" style={{ flex: 1 }}>
+            <Flex direction="column" gap="5" style={{ flex: 1 }}>
                 {/* Collapsible Summary */}
-                <Box mb="6">
+                <Box mb="6" px="6" pt="6">
                     {isSummaryExpanded ? (
                         <>
                             <Flex justify="end" mb="2">
@@ -416,103 +418,103 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                     )}
                 </Box>
 
-
-
-                {/* Split View */}
-                <Grid columns="12" gap="6" style={{ flex: 1, minHeight: 0 }}>
-                    {/* Left Panel: List */}
-                    <Box style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <Card size="3" style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: 0 }}>
-                            <Flex align="center" justify="between" p="4" style={{ borderBottom: '1px solid var(--gray-4)' }}>
-                                <Flex gap="3" style={{ flex: 1 }}>
-                                    <TextField.Root placeholder="Search SKU, Product Name...">
-                                        <TextField.Slot><MagnifyingGlassIcon height="16" width="16" /></TextField.Slot>
-                                    </TextField.Root>
-                                </Flex>
-                                <Flex gap="2">
-                                    <Button variant="soft" color="gray">All Materials <ChevronDownIcon /></Button>
-                                    <Button variant="soft" color="gray">Stock Status <ChevronDownIcon /></Button>
-                                </Flex>
-                            </Flex>
-
-                            <Box style={{ flex: 1, overflow: 'auto' }}>
-                                <Table.Root>
-                                    <Table.Header>
-                                        <Table.Row>
-                                            <Table.ColumnHeaderCell width="32px"><Checkbox /></Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>SKU ID</Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>IMAGE</Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>PRODUCT NAME</Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>PROPERTIES</Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>STOCK LEVEL</Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>STATUS</Table.ColumnHeaderCell>
-                                        </Table.Row>
-                                    </Table.Header>
-                                    <Table.Body>
-                                        {items.map((item) => (
-                                            <Table.Row
-                                                key={item.id}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s ease',
-                                                    backgroundColor: selectedItem.id === item.id ? 'var(--accent-4)' : 'transparent',
-                                                    boxShadow: selectedItem.id === item.id ? 'inset 3px 0 0 0 var(--accent-9)' : 'none'
-                                                }}
-                                                className="hover:bg-gray-2"
-                                                onClick={() => setSelectedItem(item)}
-                                            >
-                                                <Table.Cell><Checkbox /></Table.Cell>
-                                                <Table.Cell><Text weight="medium" size="1">{item.id}</Text></Table.Cell>
-                                                <Table.Cell>
-                                                    <Box style={{ width: '32px', height: '32px', backgroundColor: 'var(--gray-4)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <ComponentPlaceholderIcon color="gray" />
-                                                    </Box>
-                                                </Table.Cell>
-                                                <Table.Cell>
-                                                    <Box>
-                                                        <Flex align="center" gap="2">
-                                                            <Text as="div" weight="bold" size="2">{item.name}</Text>
-                                                            {(item as any).aiStatus && (
-                                                                <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: (item as any).aiStatus === 'warning' ? 'var(--orange-9)' : 'var(--blue-9)', boxShadow: `0 0 0 2px ${(item as any).aiStatus === 'warning' ? 'var(--orange-5)' : 'var(--blue-5)'}` }} />
-                                                            )}
-                                                        </Flex>
-                                                        <Text as="div" size="1" color="gray">{item.category}</Text>
-                                                    </Box>
-                                                </Table.Cell>
-                                                <Table.Cell><Text size="2">{item.properties}</Text></Table.Cell>
-                                                <Table.Cell>
-                                                    <Flex align="center" gap="2">
-                                                        <Progress.Root value={(item.stock / 600) * 100} style={{ width: '60px', height: '4px', backgroundColor: 'var(--gray-4)', borderRadius: '999px', overflow: 'hidden' }}>
-                                                            <Progress.Indicator style={{ width: '100%', height: '100%', backgroundColor: 'var(--gray-12)', transform: `translateX(-${100 - ((item.stock / 600) * 100)}%)` }} />
-                                                        </Progress.Root>
-                                                        <Text size="1">{Math.floor((item.stock / 600) * 100)}%</Text>
-                                                    </Flex>
-                                                </Table.Cell>
-                                                <Table.Cell>
-                                                    <Badge color={item.statusColor} variant="solid" radius="full">{item.status}</Badge>
-                                                </Table.Cell>
-                                            </Table.Row>
-                                        ))}
-                                    </Table.Body>
-                                </Table.Root>
-                            </Box>
-                        </Card>
+                <Tabs.Root defaultValue="order-info" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <Box mb="4" px="6">
+                        <Tabs.List>
+                            <Tabs.Trigger value="order-info" style={{ fontSize: '16px', fontWeight: 500 }}>Order Info</Tabs.Trigger>
+                            <Tabs.Trigger value="activity" style={{ fontSize: '16px', fontWeight: 500 }}>Activity Stream</Tabs.Trigger>
+                        </Tabs.List>
                     </Box>
 
-                    {/* Right Panel: Details */}
-                    <Box style={{ gridColumn: 'span 4', height: '100%' }}>
-                        <Card size="3" style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: 0 }}>
-                            <Tabs.Root defaultValue="order-info" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                <Box px="4" pt="4" pb="2" style={{ borderBottom: '1px solid var(--gray-5)' }}>
-                                    <Tabs.List>
-                                        <Tabs.Trigger value="order-info">Order Info</Tabs.Trigger>
-                                        <Tabs.Trigger value="activity">Activity Stream</Tabs.Trigger>
-                                    </Tabs.List>
-                                </Box>
 
-                                <Box style={{ flex: 1, overflow: 'hidden' }}>
-                                    <Tabs.Content value="order-info" style={{ height: '100%', overflow: 'auto' }}>
-                                        <Box p="4">
+
+                    <Tabs.Content value="order-info" style={{ flexDirection: "column" }}>
+                        {/* Split View */}
+                        <Grid columns="12" gap="6" style={{ padding: '24px' }}>
+                            {/* Left Panel: List */}
+                            <Box style={{ gridColumn: 'span 8', display: 'flex', flexDirection: 'column' }}>
+                                <Card size="3" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
+                                    <Flex align="center" justify="between" p="4" style={{ borderBottom: '1px solid var(--gray-4)' }}>
+                                        <Flex gap="3" style={{ flex: 1 }}>
+                                            <TextField.Root placeholder="Search SKU, Product Name...">
+                                                <TextField.Slot><MagnifyingGlassIcon height="16" width="16" /></TextField.Slot>
+                                            </TextField.Root>
+                                        </Flex>
+                                        <Flex gap="2">
+                                            <Button variant="soft" color="gray">All Materials <ChevronDownIcon /></Button>
+                                            <Button variant="soft" color="gray">Stock Status <ChevronDownIcon /></Button>
+                                        </Flex>
+                                    </Flex>
+
+                                    <Box style={{}}>
+                                        <Table.Root>
+                                            <Table.Header>
+                                                <Table.Row>
+                                                    <Table.ColumnHeaderCell width="32px"><Checkbox /></Table.ColumnHeaderCell>
+                                                    <Table.ColumnHeaderCell>SKU ID</Table.ColumnHeaderCell>
+                                                    <Table.ColumnHeaderCell>IMAGE</Table.ColumnHeaderCell>
+                                                    <Table.ColumnHeaderCell>PRODUCT NAME</Table.ColumnHeaderCell>
+                                                    <Table.ColumnHeaderCell>PROPERTIES</Table.ColumnHeaderCell>
+                                                    <Table.ColumnHeaderCell>STOCK LEVEL</Table.ColumnHeaderCell>
+                                                    <Table.ColumnHeaderCell>STATUS</Table.ColumnHeaderCell>
+                                                </Table.Row>
+                                            </Table.Header>
+                                            <Table.Body>
+                                                {items.map((item) => (
+                                                    <Table.Row
+                                                        key={item.id}
+                                                        style={{
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s ease',
+                                                            backgroundColor: selectedItem.id === item.id ? 'var(--accent-4)' : 'transparent',
+                                                            boxShadow: selectedItem.id === item.id ? 'inset 3px 0 0 0 var(--accent-9)' : 'none'
+                                                        }}
+                                                        className="hover:bg-gray-2"
+                                                        onClick={() => setSelectedItem(item)}
+                                                    >
+                                                        <Table.Cell><Checkbox /></Table.Cell>
+                                                        <Table.Cell><Text weight="medium" size="1">{item.id}</Text></Table.Cell>
+                                                        <Table.Cell>
+                                                            <Box style={{ width: '32px', height: '32px', backgroundColor: 'var(--gray-4)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <ComponentPlaceholderIcon color="gray" />
+                                                            </Box>
+                                                        </Table.Cell>
+                                                        <Table.Cell>
+                                                            <Box>
+                                                                <Flex align="center" gap="2">
+                                                                    <Text as="div" weight="bold" size="2">{item.name}</Text>
+                                                                    {(item as any).aiStatus && (
+                                                                        <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: (item as any).aiStatus === 'warning' ? 'var(--orange-9)' : 'var(--blue-9)', boxShadow: `0 0 0 2px ${(item as any).aiStatus === 'warning' ? 'var(--orange-5)' : 'var(--blue-5)'}` }} />
+                                                                    )}
+                                                                </Flex>
+                                                                <Text as="div" size="1" color="gray">{item.category}</Text>
+                                                            </Box>
+                                                        </Table.Cell>
+                                                        <Table.Cell><Text size="2">{item.properties}</Text></Table.Cell>
+                                                        <Table.Cell>
+                                                            <Flex align="center" gap="2">
+                                                                <Progress.Root value={(item.stock / 600) * 100} style={{ width: '60px', height: '4px', backgroundColor: 'var(--gray-4)', borderRadius: '999px', overflow: 'hidden' }}>
+                                                                    <Progress.Indicator style={{ width: '100%', height: '100%', backgroundColor: 'var(--gray-12)', transform: `translateX(-${100 - ((item.stock / 600) * 100)}%)` }} />
+                                                                </Progress.Root>
+                                                                <Text size="1">{Math.floor((item.stock / 600) * 100)}%</Text>
+                                                            </Flex>
+                                                        </Table.Cell>
+                                                        <Table.Cell>
+                                                            <Badge color={item.statusColor} variant="solid" radius="full">{item.status}</Badge>
+                                                        </Table.Cell>
+                                                    </Table.Row>
+                                                ))}
+                                            </Table.Body>
+                                        </Table.Root>
+                                    </Box>
+                                </Card>
+                            </Box>
+
+                            {/* Right Panel: Details */}
+                            <Box style={{ gridColumn: 'span 4' }}>
+                                <Card size="3" style={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
+                                    <Box style={{}}>
+                                        <Box p="4" style={{}}>
                                             <Flex justify="between" align="center" mb="4" pb="4" style={{ borderBottom: '1px solid var(--gray-5)' }}>
                                                 <Heading size="3">Item Details</Heading>
                                                 <Flex align="center" gap="1">
@@ -778,170 +780,226 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                                                 </Flex>
                                             </Flex>
                                         </Box>
-                                    </Tabs.Content>
+                                    </Box>
+                                </Card>
+                            </Box>
+                        </Grid>
+                    </Tabs.Content>
 
-                                    <Tabs.Content value="activity" style={{ height: '100%' }}>
-                                        <Flex style={{ height: '100%' }}>
-                                            {/* Chat Area */}
-                                            <Flex direction="column" style={{ flex: 1, borderRight: '1px solid var(--gray-5)' }}>
-                                                <Box p="4" style={{ flex: 1, overflowY: 'auto' }}>
-                                                    <Flex direction="column" gap="4">
-                                                        <Flex justify="center">
-                                                            <Badge variant="surface" color="gray" radius="full">
-                                                                Today, 9:23 AM
-                                                            </Badge>
-                                                        </Flex>
-
-                                                        {messages.map((msg) => (
-                                                            <Flex key={msg.id} gap="3" justify={msg.type === 'user' ? 'end' : 'start'}>
-                                                                {msg.type !== 'user' && (
-                                                                    msg.type === 'system' ? (
-                                                                        <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--gray-4)' }}>
-                                                                            <UpdateIcon />
-                                                                        </Flex>
-                                                                    ) : (
-                                                                        <Avatar
-                                                                            size="2"
-                                                                            fallback={msg.type === 'ai' ? <MagicWandIcon /> : <PersonIcon />}
-                                                                            radius="full"
-                                                                            style={msg.type === 'ai' ? { backgroundColor: 'var(--purple-9)', color: 'white' } : {}}
-                                                                            src={msg.avatar}
-                                                                        />
-                                                                    )
-                                                                )}
-
-                                                                <Box style={{ maxWidth: '85%' }}>
-                                                                    {msg.type === 'system' ? (
-                                                                        <Text size="2" color="gray">
-                                                                            <Text weight="bold">{msg.sender}</Text> {msg.content.replace('System ', '')}
-                                                                        </Text>
-                                                                    ) : (
-                                                                        <Card size="1" style={{ backgroundColor: msg.type === 'user' ? 'var(--gray-4)' : msg.type === 'ai' ? 'var(--purple-3)' : 'var(--card-background-color)' }}>
-                                                                            <Text size="2" weight="bold" style={{ display: 'block', marginBottom: '4px', color: msg.type === 'ai' ? 'var(--purple-11)' : 'inherit' }}>
-                                                                                {msg.sender}
-                                                                            </Text>
-                                                                            <Text size="2" style={{ color: 'var(--gray-12)' }}>
-                                                                                {msg.content}
-                                                                            </Text>
-                                                                            {msg.type === 'ai' && (
-                                                                                <Flex gap="2" mt="2">
-                                                                                    <Button size="1" variant="soft" color="purple">Create Task</Button>
-                                                                                    <Button size="1" variant="ghost" color="purple">Dismiss</Button>
-                                                                                </Flex>
-                                                                            )}
-                                                                        </Card>
-                                                                    )}
-                                                                </Box>
-
-                                                                {msg.type === 'user' && (
-                                                                    <Avatar
-                                                                        size="2"
-                                                                        fallback="JD"
-                                                                        radius="full"
-                                                                        color="indigo"
-                                                                        src="/user-avatar.png"
-                                                                    />
-                                                                )}
-                                                            </Flex>
-                                                        ))}
-                                                    </Flex>
-                                                </Box>
-
-                                                {/* Input Area */}
-                                                <Box p="4" style={{ backgroundColor: 'var(--gray-2)', borderTop: '1px solid var(--gray-5)' }}>
-                                                    <Flex gap="3">
-                                                        <Box style={{ position: 'relative', flex: 1 }}>
-                                                            <TextField.Root placeholder="Type a message or use @ to mention..." variant="soft" radius="large" size="3">
-                                                                <TextField.Slot></TextField.Slot>
-                                                                <TextField.Slot>
-                                                                    <IconButton variant="ghost" color="gray" radius="full" size="1">
-                                                                        <Link2Icon width="16" height="16" />
-                                                                    </IconButton>
-                                                                </TextField.Slot>
-                                                            </TextField.Root>
-                                                        </Box>
-                                                        <IconButton size="3" variant="solid" color="gray" radius="large">
-                                                            <PaperPlaneIcon width="18" height="18" />
-                                                        </IconButton>
-                                                    </Flex>
-                                                </Box>
+                    <Tabs.Content value="activity" style={{ display: 'flex', flexDirection: "column", minHeight: '800px' }}>
+                        <Flex style={{ flexDirection: 'row', flex: 1 }}>
+                            {/* Chat Area */}
+                            <Flex direction="column" style={{ flex: 1, borderRight: '1px solid var(--gray-5)' }}>
+                                {/* Header */}
+                                <Box p="4" style={{ backgroundColor: 'var(--gray-2)', borderBottom: '1px solid var(--gray-5)', flexShrink: 0 }}>
+                                    <Flex justify="between" align="center">
+                                        <Box>
+                                            <Flex gap="2" align="center">
+                                                <Heading size="3" mb="1" color="gray">Activity Stream</Heading>
+                                                <Badge variant="soft" color="gray" radius="full">#ORD-2055</Badge>
                                             </Flex>
-
-                                            {/* Right Sidebar: Collaborators & Docs */}
-                                            <Flex direction="column" style={{ width: '300px', borderLeft: '1px solid var(--gray-5)', backgroundColor: 'var(--gray-1)' }}>
-                                                {/* Collaborators */}
-                                                <Box p="4" style={{ borderBottom: '1px solid var(--gray-5)' }}>
-                                                    <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                        Collaborators
-                                                    </Text>
-                                                    <Box mt="3">
-                                                        <Flex direction="column" gap="3">
-                                                            {collaborators.map((collaborator, i) => (
-                                                                <Flex key={i} align="center" gap="3">
-                                                                    <Box position="relative">
-                                                                        <Avatar
-                                                                            size="2"
-                                                                            fallback={collaborator.name.charAt(0)}
-                                                                            radius="full"
-                                                                            src={collaborator.avatar}
-                                                                        />
-                                                                        <Box style={{
-                                                                            position: 'absolute',
-                                                                            bottom: -2,
-                                                                            right: -2,
-                                                                            width: 8,
-                                                                            height: 8,
-                                                                            borderRadius: '50%',
-                                                                            backgroundColor: collaborator.status === 'online' ? 'var(--green-9)' : 'var(--gray-8)',
-                                                                            border: '2px solid white'
-                                                                        }} />
-                                                                    </Box>
-                                                                    <Box>
-                                                                        <Text as="div" size="2" weight="medium">{collaborator.name}</Text>
-                                                                        <Text as="div" size="1" color="gray">{collaborator.role}</Text>
-                                                                    </Box>
-                                                                </Flex>
-                                                            ))}
-                                                        </Flex>
-                                                        <Button variant="ghost" style={{ marginTop: '12px', paddingLeft: 0, justifyContent: 'flex-start' }}>
-                                                            <PlusIcon /> Invite New
-                                                        </Button>
-                                                    </Box>
-                                                </Box>
-
-                                                {/* Shared Docs */}
-                                                <Box p="4" style={{ flex: 1 }}>
-                                                    <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                        Shared Documents
-                                                    </Text>
-                                                    <Box mt="3">
-                                                        <Flex direction="column" gap="2">
-                                                            {documents.map((doc, i) => (
-                                                                <Card key={i} variant="ghost" style={{ padding: '8px', cursor: 'pointer' }} className="hover:bg-gray-3">
-                                                                    <Flex align="center" gap="3">
-                                                                        <FileTextIcon color="var(--blue-9)" width="20" height="20" />
-                                                                        <Box style={{ overflow: 'hidden' }}>
-                                                                            <Text size="2" weight="medium" style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</Text>
-                                                                            <Text size="1" color="gray">{doc.size} • {doc.uploaded}</Text>
-                                                                        </Box>
-                                                                    </Flex>
-                                                                </Card>
-                                                            ))}
-                                                        </Flex>
-                                                        <Button variant="outline" style={{ marginTop: '12px', width: '100%', borderStyle: 'dashed' }}>
-                                                            <DownloadIcon /> Upload File
-                                                        </Button>
-                                                    </Box>
-                                                </Box>
+                                            <Text size="1" color="gray">Real-time updates and collaboration</Text>
+                                        </Box>
+                                        <Flex gap="3" align="center">
+                                            <Flex gap="1" style={{ marginLeft: '-8px' }}>
+                                                {collaborators.map((c, i) => (
+                                                    <Avatar
+                                                        key={i}
+                                                        size="1"
+                                                        variant="solid"
+                                                        radius="full"
+                                                        src={c.avatar === 'AI' ? undefined : c.avatar}
+                                                        fallback={c.avatar === 'AI' ? <MagicWandIcon /> : c.name[0]}
+                                                        style={{
+                                                            border: '2px solid var(--color-background)',
+                                                            marginLeft: '-8px',
+                                                            backgroundColor: c.avatar === 'AI' ? 'var(--purple-9)' : undefined,
+                                                            color: 'white'
+                                                        }}
+                                                    />
+                                                ))}
                                             </Flex>
+                                            <IconButton size="1" variant="ghost" radius="full" style={{ border: '1px solid var(--gray-6)' }}>
+                                                <PlusIcon width="14" height="14" />
+                                            </IconButton>
                                         </Flex>
-                                    </Tabs.Content>
+                                    </Flex>
                                 </Box>
-                            </Tabs.Root>
-                        </Card>
-                    </Box>
-                </Grid>
-            </Flex>
+                                <Box p="4" style={{}}>
+                                    <Flex direction="column" gap="4">
+                                        <Flex justify="center">
+                                            <Badge variant="surface" color="gray" radius="full">
+                                                Today, 9:23 AM
+                                            </Badge>
+                                        </Flex>
+
+                                        {messages.map((msg) => (
+                                            <Flex key={msg.id} gap="3" justify={msg.type === 'user' ? 'end' : 'start'}>
+                                                {msg.type !== 'user' && (
+                                                    msg.type === 'system' ? (
+                                                        <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--gray-4)' }}>
+                                                            <UpdateIcon />
+                                                        </Flex>
+                                                    ) : (
+                                                        <Avatar
+                                                            size="2"
+                                                            fallback={msg.type === 'ai' ? <MagicWandIcon /> : <PersonIcon />}
+                                                            radius="full"
+                                                            style={msg.type === 'ai' ? { backgroundColor: 'var(--purple-9)', color: 'white' } : {}}
+                                                            src={msg.avatar}
+                                                        />
+                                                    )
+                                                )}
+
+                                                <Box style={{ maxWidth: '85%' }}>
+                                                    {msg.type === 'system' ? (
+                                                        <Text size="2" color="gray">
+                                                            <Text weight="bold">{msg.sender}</Text> {msg.content.replace('System ', '')}
+                                                        </Text>
+                                                    ) : (
+                                                        <Card size="1" style={{ backgroundColor: msg.type === 'user' ? 'var(--gray-4)' : msg.type === 'ai' ? 'var(--purple-3)' : 'var(--card-background-color)' }}>
+                                                            <Text size="2" weight="bold" style={{ display: 'block', marginBottom: '4px', color: msg.type === 'ai' ? 'var(--purple-11)' : 'inherit' }}>
+                                                                {msg.sender}
+                                                            </Text>
+                                                            <Text size="2" style={{ color: 'var(--gray-12)' }}>
+                                                                {msg.content}
+                                                            </Text>
+                                                            {msg.type === 'ai' && (
+                                                                <Flex gap="2" mt="2">
+                                                                    <Button size="1" variant="soft" color="purple">Create Task</Button>
+                                                                    <Button size="1" variant="ghost" color="purple">Dismiss</Button>
+                                                                </Flex>
+                                                            )}
+                                                        </Card>
+                                                    )}
+                                                </Box>
+
+                                                {msg.type === 'user' && (
+                                                    <Avatar
+                                                        size="2"
+                                                        fallback="JD"
+                                                        radius="full"
+                                                        color="indigo"
+                                                        src="/user-avatar.png"
+                                                    />
+                                                )}
+                                            </Flex>
+                                        ))}
+                                    </Flex>
+                                </Box>
+
+                                {/* Input Area */}
+                                <Box p="4" style={{ position: 'sticky', bottom: '16px', margin: '0 16px', borderRadius: '16px', backgroundColor: 'var(--gray-2)', border: '1px solid var(--gray-5)', boxShadow: 'var(--shadow-4)', zIndex: 10, flexShrink: 0 }}>
+                                    <Flex gap="3">
+                                        <Box style={{ position: 'relative', flex: 1 }}>
+                                            <TextField.Root placeholder="Type a message or use @ to mention..." variant="soft" radius="large" size="3">
+                                                <TextField.Slot></TextField.Slot>
+                                                <TextField.Slot>
+                                                    <IconButton variant="ghost" color="gray" radius="full" size="1">
+                                                        <Link2Icon width="16" height="16" />
+                                                    </IconButton>
+                                                </TextField.Slot>
+                                            </TextField.Root>
+                                        </Box>
+                                        <IconButton size="3" variant="solid" color="gray" radius="large">
+                                            <PaperPlaneIcon width="18" height="18" />
+                                        </IconButton>
+                                    </Flex>
+                                </Box>
+                            </Flex>
+
+                            {/* Contextual Quick Actions Sidebar */}
+                            <Flex direction="column" style={{ width: '300px', borderLeft: '1px solid var(--gray-5)', backgroundColor: 'var(--gray-2)', height: '100%', animation: 'slideIn 0.5s ease-out' }}>
+                                <Box p="4" style={{ backgroundColor: 'var(--gray-3)', borderBottom: '1px solid var(--gray-5)' }}>
+                                    <Flex justify="between" align="center" mb="2">
+                                        <Text size="1" weight="bold" style={{ color: 'var(--gray-11)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Context</Text>
+                                        <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--orange-9)', boxShadow: '0 0 0 2px var(--orange-4)' }} />
+                                    </Flex>
+                                    <Flex align="center" gap="3">
+                                        <Flex align="center" justify="center" style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--orange-3)', border: '1px solid var(--orange-5)' }}>
+                                            <UpdateIcon color="var(--orange-11)" width="20" height="20" />
+                                        </Flex>
+                                        <Box>
+                                            <Text as="div" size="2" weight="bold" style={{ color: 'var(--gray-12)' }}>Pending Review</Text>
+                                            <Text as="div" size="1" color="gray">Waiting for Final Approval (2/3)</Text>
+                                        </Box>
+                                    </Flex>
+                                </Box>
+
+                                <Box p="4" style={{ flex: 1, overflowY: 'auto' }}>
+                                    <Box mb="6">
+                                        <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '12px' }}>
+                                            Suggested Actions
+                                        </Text>
+
+                                        <Flex direction="column" gap="3">
+                                            <Button variant="outline" style={{ height: 'auto', padding: '12px', justifyContent: 'flex-start', backgroundColor: 'var(--card-background-color)', borderColor: 'var(--gray-6)', cursor: 'pointer' }} className="hover:border-blue-8 hover:shadow-sm transition-all">
+                                                <Flex gap="3" align="start" style={{ width: '100%' }}>
+                                                    <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'var(--blue-3)', flexShrink: 0 }}>
+                                                        <FileTextIcon color="var(--blue-11)" width="16" height="16" />
+                                                    </Flex>
+                                                    <Box style={{ textAlign: 'left' }}>
+                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--gray-12)' }}>Process Quote</Text>
+                                                        <Text as="div" size="1" color="gray">Analyze PDF & Extract Data</Text>
+                                                    </Box>
+                                                </Flex>
+                                            </Button>
+
+                                            <Button variant="outline" style={{ height: 'auto', padding: '12px', justifyContent: 'flex-start', backgroundColor: 'var(--card-background-color)', borderColor: 'var(--gray-6)', cursor: 'pointer' }} className="hover:border-green-8 hover:shadow-sm transition-all">
+                                                <Flex gap="3" align="start" style={{ width: '100%' }}>
+                                                    <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'var(--green-3)', flexShrink: 0 }}>
+                                                        <CheckIcon color="var(--green-11)" width="16" height="16" />
+                                                    </Flex>
+                                                    <Box style={{ textAlign: 'left' }}>
+                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--gray-12)' }}>Approve Order</Text>
+                                                        <Text as="div" size="1" color="gray">Move to Production</Text>
+                                                    </Box>
+                                                </Flex>
+                                            </Button>
+
+                                            <Button variant="outline" style={{ height: 'auto', padding: '12px', justifyContent: 'flex-start', backgroundColor: 'var(--card-background-color)', borderColor: 'var(--gray-6)', cursor: 'pointer' }} className="hover:border-orange-8 hover:shadow-sm transition-all">
+                                                <Flex gap="3" align="start" style={{ width: '100%' }}>
+                                                    <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'var(--orange-3)', flexShrink: 0 }}>
+                                                        <Pencil1Icon color="var(--orange-11)" width="16" height="16" />
+                                                    </Flex>
+                                                    <Box style={{ textAlign: 'left' }}>
+                                                        <Text as="div" size="2" weight="medium" style={{ color: 'var(--gray-12)' }}>Request Changes</Text>
+                                                        <Text as="div" size="1" color="gray">Send feedback to vendor</Text>
+                                                    </Box>
+                                                </Flex>
+                                            </Button>
+                                        </Flex>
+                                    </Box>
+
+                                    <Box>
+                                        <Text size="1" weight="medium" color="gray" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '12px' }}>
+                                            Live Updates
+                                        </Text>
+                                        <Box p="3" style={{ backgroundColor: 'var(--blue-3)', borderRadius: '12px', border: '1px solid var(--blue-5)' }}>
+                                            <Flex gap="2">
+                                                <Flex align="center" justify="center" style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--blue-4)', flexShrink: 0, position: 'relative' }}>
+                                                    <Box style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--blue-11)', position: 'relative', zIndex: 1 }} />
+                                                    <Box style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', backgroundColor: 'var(--blue-9)', opacity: 0.3, animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
+                                                </Flex>
+                                                <Box>
+                                                    <Text as="div" size="1" weight="medium" style={{ color: 'var(--blue-11)' }}>AI Assistant is processing...</Text>
+                                                    <Text as="div" size="1" style={{ color: 'var(--blue-10)', fontSize: '10px' }}>Estimated completion: 30s</Text>
+                                                </Box>
+                                            </Flex>
+                                        </Box>
+                                    </Box>
+                                </Box>
+
+                                <Box p="4" style={{ borderTop: '1px solid var(--gray-5)', backgroundColor: 'var(--gray-3)' }}>
+                                    <Button variant="ghost" color="gray" style={{ width: '100%', justifyContent: 'center' }}>
+                                        View Activity Log <ArrowRightIcon style={{ marginLeft: '4px' }} />
+                                    </Button>
+                                </Box>
+                            </Flex>
+                        </Flex>
+                    </Tabs.Content>
+                </Tabs.Root>
+            </Flex >
 
             <Dialog.Root open={isAiOpen} onOpenChange={setIsAiOpen}>
                 <Dialog.Content style={{ maxWidth: 450 }}>
