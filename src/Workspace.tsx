@@ -204,8 +204,16 @@ const PendingOrders = () => {
     )
 }
 
-// @ts-ignore
-export default function Workspace({ onBack }) {
+interface WorkspaceProps {
+    onBack: () => void;
+    onLogout: () => void;
+    onNavigateToWorkspace: () => void;
+}
+
+export default function Workspace({ onBack, onLogout, onNavigateToWorkspace }: WorkspaceProps) {
+    const [activeTab, setActiveTab] = useState('board')
+    const [searchQuery, setSearchQuery] = useState('')
+
     // --- State ---
     const [messages, setMessages] = useState([
         {

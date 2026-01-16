@@ -450,7 +450,6 @@ export default function Detail({ onBack }: { onBack: () => void }) {
             type: "action_success",
         }
     ])
-    const onLogout = () => { console.log('Logout') }
 
     return (
         <Flex direction="column" style={{ minHeight: '100vh', backgroundColor: 'var(--gray-2)' }}>
