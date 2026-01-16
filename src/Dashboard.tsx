@@ -1,17 +1,9 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Button, Card, Flex, Grid, Heading, Text, TextField, Avatar, Badge, Table, IconButton, Separator, Box, Popover, Checkbox, DropdownMenu, Dialog, Tabs, Select } from '@radix-ui/themes'
-import { MagnifyingGlassIcon, BellIcon, CalendarIcon, PlusIcon, CopyIcon, FileTextIcon, PaperPlaneIcon, ReaderIcon, ArrowRightIcon, PersonIcon, TargetIcon, RocketIcon, ViewGridIcon, ListBulletIcon, SunIcon, MoonIcon, ExitIcon, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, EyeOpenIcon, Pencil1Icon, TrashIcon, EnvelopeClosedIcon, CheckCircledIcon, ClockIcon, SewingPinIcon, Cross2Icon, HomeIcon, CubeIcon, BarChartIcon, ClipboardIcon, DotsHorizontalIcon, QuestionMarkCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons'
+import { MagnifyingGlassIcon, BellIcon, CalendarIcon, PlusIcon, CopyIcon, FileTextIcon, PaperPlaneIcon, ReaderIcon, ArrowRightIcon, PersonIcon, TargetIcon, RocketIcon, ViewGridIcon, ListBulletIcon, SunIcon, MoonIcon, ExitIcon, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, EyeOpenIcon, Pencil1Icon, TrashIcon, EnvelopeClosedIcon, CheckCircledIcon, ClockIcon, SewingPinIcon, Cross2Icon, HomeIcon, CubeIcon, BarChartIcon, ClipboardIcon, DotsHorizontalIcon, QuestionMarkCircledIcon, ExclamationTriangleIcon, BackpackIcon } from '@radix-ui/react-icons'
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts'
 import { useTheme } from './ThemeContext';
-
-function ThemeToggle() {
-    const { appearance, toggleTheme } = useTheme();
-    return (
-        <IconButton variant="ghost" color="gray" onClick={toggleTheme} style={{ width: '32px', height: '32px', borderRadius: '9999px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {appearance === 'dark' ? <SunIcon width="18" height="18" /> : <MoonIcon width="18" height="18" />}
-        </IconButton>
-    )
-}
+import Navbar from './components/Navbar';
 
 const inventoryData = [
     { name: 'Seating', value: 78, amt: 480 },
@@ -42,7 +34,7 @@ const trackingSteps = [
     { status: 'Customs Hold', date: 'Dec 24, 11:00 AM', location: 'Port of Entry', completed: false, alert: true },
 ]
 
-export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: () => void, onNavigateToDetail: () => void }) {
+export default function Dashboard({ onLogout, onNavigateToDetail, onNavigateToWorkspace }: { onLogout: () => void, onNavigateToDetail: () => void, onNavigateToWorkspace: () => void }) {
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const { appearance } = useTheme();
@@ -70,7 +62,6 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
     }, [selectedClient, availableProjects])
     const [trackingOrder, setTrackingOrder] = useState<any>(null)
     const [showMetrics, setShowMetrics] = useState(false)
-    const [isAppsOpen, setIsAppsOpen] = useState(false)
 
     const toggleExpand = (id: string) => {
         const newExpanded = new Set(expandedIds)
@@ -138,152 +129,7 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
 
     return (
         <Flex direction="column" style={{ minHeight: '100vh', backgroundColor: 'var(--gray-2)' }}>
-            <style>{`
-                .nav-glass {
-                    background-color: var(--color-panel-translucent);
-                    backdrop-filter: blur(24px);
-                    border: 1px solid var(--gray-a3);
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                }
-                .nav-item-label {
-                    max-width: 0;
-                    opacity: 0;
-                    overflow: hidden;
-                    transition: all 0.3s ease;
-                    white-space: nowrap;
-                    margin-left: 0;
-                }
-                .nav-item:hover .nav-item-label, .nav-item.active .nav-item-label {
-                    max-width: 100px;
-                    opacity: 1;
-                }
-            `}</style>
-
-            {/* Floating Capsule Navbar */}
-            <Box
-                style={{
-                    position: 'fixed',
-                    top: '24px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 100,
-                    borderRadius: '9999px',
-                    width: 'max-content',
-                    maxWidth: '90vw',
-                }}
-                className="nav-glass"
-            >
-                <Flex align="center" gap="2" p="2">
-                    {/* Logo */}
-                    <Box px="4">
-                        <style>{`
-                            .dashboard-logo-light { display: block; }
-                            .dashboard-logo-dark { display: none; }
-                            .dark .dashboard-logo-light, [data-theme='dark'] .dashboard-logo-light { display: none; }
-                            .dark .dashboard-logo-dark, [data-theme='dark'] .dashboard-logo-dark { display: block; }
-                        `}</style>
-                        <img className="dashboard-logo-light" src="/logo-on-light.jpg" alt="Strata" style={{ height: '20px', width: 'auto' }} />
-                        <img className="dashboard-logo-dark" src="/logo-on-dark.jpg" alt="Strata" style={{ height: '20px', width: 'auto' }} />
-                    </Box>
-
-                    <Separator orientation="vertical" size="2" style={{ height: '24px', margin: '0 4px' }} />
-
-                    {/* Nav Items */}
-                    <Flex gap="1">
-                        <NavItem icon={<HomeIcon width="16" height="16" />} label="Overview" active />
-                        <NavItem icon={<CubeIcon width="16" height="16" />} label="Inventory" />
-                        <NavItem icon={<BarChartIcon width="16" height="16" />} label="Production" />
-                        <NavItem icon={<ClipboardIcon width="16" height="16" />} label="Orders" />
-                    </Flex>
-
-                    <Separator orientation="vertical" size="2" style={{ height: '24px', margin: '0 4px' }} />
-
-                    {/* Tools */}
-                    <Flex gap="2" align="center" style={{ position: 'relative', paddingRight: '8px' }}>
-                        <IconButton
-                            variant="ghost"
-                            color="gray"
-                            radius="full"
-                            style={{ width: '32px', height: '32px' }}
-                            onClick={() => setIsAppsOpen(!isAppsOpen)}
-                        >
-                            <ViewGridIcon width="18" height="18" />
-                        </IconButton>
-
-                        {isAppsOpen && (
-                            <>
-                                <div
-                                    style={{
-                                        position: 'fixed', inset: 0, zIndex: 99, backgroundColor: 'transparent'
-                                    }}
-                                    onClick={() => setIsAppsOpen(false)}
-                                />
-                                <style>{`
-                                    :root { --apps-menu-bg: rgba(255, 255, 255, 0.85); }
-                                    .dark, [data-theme='dark'] { --apps-menu-bg: rgba(23, 25, 35, 0.85); }
-                                `}</style>
-                                <div
-                                    style={{
-                                        position: 'fixed',
-                                        top: '90px',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
-                                        width: '400px',
-                                        padding: 0,
-                                        overflow: 'hidden',
-                                        backgroundColor: 'var(--apps-menu-bg)',
-                                        backdropFilter: 'blur(24px)',
-                                        WebkitBackdropFilter: 'blur(24px)',
-                                        borderRadius: '24px',
-                                        border: '1px solid var(--gray-a4)',
-                                        zIndex: 100,
-                                        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)'
-                                    }}
-                                >
-                                    <Grid columns="3" gap="3" p="4">
-                                        {[
-                                            { icon: <HomeIcon width="24" height="24" />, label: "Portal", color: "var(--blue-9)", bg: "var(--blue-3)" },
-                                            { icon: <PersonIcon width="24" height="24" />, label: "CRM", color: "var(--plum-9)", bg: "var(--plum-3)" },
-                                            { icon: <FileTextIcon width="24" height="24" />, label: "Invoice", color: "var(--green-9)", bg: "var(--green-3)" },
-                                            { icon: <CubeIcon width="24" height="24" />, label: "Inventory", color: "var(--orange-9)", bg: "var(--orange-3)" },
-                                            { icon: <BarChartIcon width="24" height="24" />, label: "Analytics", color: "var(--pink-9)", bg: "var(--pink-3)" },
-                                            { icon: <CheckCircledIcon width="24" height="24" />, label: "Support", color: "var(--cyan-9)", bg: "var(--cyan-3)" },
-                                            { icon: <ViewGridIcon width="24" height="24" />, label: "Board", color: "var(--indigo-9)", bg: "var(--indigo-3)" },
-                                            { icon: <CalendarIcon width="24" height="24" />, label: "Calendar", color: "var(--tomato-9)", bg: "var(--tomato-3)" },
-                                            { icon: <DotsHorizontalIcon width="24" height="24" />, label: "More", color: "var(--slate-9)", bg: "var(--slate-3)" },
-                                        ].map((app, i) => (
-                                            <Flex key={i} direction="column" align="center" gap="3" p="3" style={{ cursor: 'pointer', borderRadius: '16px', transition: 'all 0.2s' }} className="hover-bg hover-scale">
-                                                <Flex justify="center" align="center" style={{ width: '48px', height: '48px', borderRadius: '16px', backgroundColor: app.bg, color: app.color, boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-                                                    {app.icon}
-                                                </Flex>
-                                                <Text size="2" weight="medium" color="gray">{app.label}</Text>
-                                            </Flex>
-                                        ))}
-                                    </Grid>
-                                </div>
-                            </>
-                        )}
-                        <ThemeToggle />
-                        <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
-                                <Button variant="ghost" radius="full" style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Avatar fallback="JD" size="1" radius="full" color="indigo" variant="soft" />
-                                </Button>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content>
-                                <Box p="2">
-                                    <Text as="div" size="2" weight="bold">Jhon Doe</Text>
-                                    <Text as="div" size="1" color="gray">Admin</Text>
-                                </Box>
-                                <Separator size="4" my="1" />
-                                <DropdownMenu.Item color="red" onClick={onLogout}>
-                                    <ExitIcon /> Sign Out
-                                </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                        </DropdownMenu.Root>
-                    </Flex>
-                </Flex>
-            </Box >
+            <Navbar onLogout={onLogout} onNavigateToWorkspace={onNavigateToWorkspace} />
 
             {/* Main Content Area */}
             < Box style={{ paddingTop: '100px', paddingBottom: '40px', paddingInline: '32px', maxWidth: '1400px', margin: '0 auto', width: '100%' }
@@ -308,8 +154,6 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                     </Flex>
                 </Flex >
 
-                {/* KPI Cards */}
-                {/* KPI Cards */}
                 {/* KPI Cards */}
                 {
                     showMetrics ? (
@@ -394,9 +238,6 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                         </Card >
                     )
                 }
-
-
-
 
                 {/* Main Content Grid */}
                 < Grid columns={{ initial: '1', lg: '3' }} gap="6" >
@@ -771,99 +612,110 @@ export default function Dashboard({ onLogout, onNavigateToDetail }: { onLogout: 
                                                     ...(step.alert ? { backgroundColor: 'var(--ruby-9)' } : {})
                                                 }}
                                             />
-                                            <Text as="div" size="2" weight="medium">{step.status}</Text>
-                                            <Text as="div" size="1" color="gray">{step.date} · {step.location}</Text>
+                                            <Text weight="bold" size="2">{step.status}</Text>
+                                            <Text size="1" color="gray">{step.date}</Text>
+                                            <Text size="1" color="gray">{step.location}</Text>
                                         </Box>
                                     ))}
                                 </Flex>
                             </Box>
                         </Box>
 
-                        {/* Right Col: Georeference & Actions */}
+                        {/* Right Col: Map & Details */}
                         <Flex direction="column" gap="4">
-                            <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase', display: 'block' }}>Delivery Location</Text>
-                            <Flex
-                                align="center"
-                                justify="center"
+                            <Box
                                 style={{
-                                    backgroundColor: 'var(--gray-3)',
+                                    height: '200px',
                                     borderRadius: '12px',
-                                    height: '160px',
-                                    border: '1px solid var(--gray-6)'
+                                    backgroundColor: 'var(--gray-3)',
+                                    backgroundImage: 'url("https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-74.006,40.7128,12,0/600x400?access_token=YOUR_ACCESS_TOKEN")', // Placeholder
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    position: 'relative'
                                 }}
                             >
-                                <Box style={{ textAlign: 'center' }}>
-                                    <SewingPinIcon width="24" height="24" color="var(--gray-8)" style={{ display: 'block', margin: '0 auto 8px' }} />
-                                    <Text size="1" color="gray">Map Preview Unavailable</Text>
+                                <Box
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '12px',
+                                        left: '12px',
+                                        backgroundColor: 'var(--color-panel-solid)',
+                                        padding: '4px 8px',
+                                        borderRadius: '8px',
+                                        fontSize: '12px',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                    }}
+                                >
+                                    <Text weight="bold">Live View</Text>
                                 </Box>
-                            </Flex>
-
-                            <Box style={{ backgroundColor: 'var(--gray-3)', padding: '12px', borderRadius: '12px', border: '1px solid var(--gray-6)' }}>
-                                <Text as="div" size="2" weight="medium">Distribution Center NY-05</Text>
-                                <Text as="div" size="1" color="gray">45 Industrial Park Dr, Brooklyn, NY 11201</Text>
                             </Box>
 
-                            <Box style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--gray-6)' }}>
-                                <Button style={{ width: '100%' }} variant="solid" onClick={() => console.log('Contact')}>
-                                    <EnvelopeClosedIcon /> Contact Support
-                                </Button>
-                            </Box>
+                            <Card size="1">
+                                <Flex gap="3" align="center">
+                                    <Box style={{ backgroundColor: 'var(--blue-3)', borderRadius: '8px', padding: '8px' }}>
+                                        <TruckIcon />
+                                    </Box>
+                                    <Box>
+                                        <Text as="div" size="2" weight="bold">Carrier: DHL Express</Text>
+                                        <Text as="div" size="1" color="gray">Tracking ID: #track_998877</Text>
+                                    </Box>
+                                </Flex>
+                            </Card>
                         </Flex>
                     </Grid>
+
+                    <Flex justify="end" mt="6" gap="3">
+                        <Dialog.Close>
+                            <Button variant="soft" color="gray" onClick={() => setTrackingOrder(null)}>Close</Button>
+                        </Dialog.Close>
+                        <Button variant="solid" style={{ borderRadius: '8px' }}>Download Proof</Button>
+                    </Flex>
                 </Dialog.Content>
-            </Dialog.Root >
+            </Dialog.Root>
+
         </Flex >
     )
 }
 
-function NavItem({ icon, label, active }: { icon: any, label: string, active?: boolean }) {
-    return (
-        <Button
-            className={`nav-item ${active ? 'active' : ''}`}
-            variant="ghost"
-            color={active ? 'indigo' : 'gray'}
-            radius="full"
-            style={{
-                height: '36px',
-                padding: '0 16px',
-                backgroundColor: active ? 'var(--accent-a3)' : 'transparent',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-            }}
-        >
-            <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {icon}
-            </Box>
-            <span className="nav-item-label" style={{ fontSize: '14px', fontWeight: 500 }}>{label}</span>
-        </Button>
-    )
-}
-
-// KPI Card Component
-function KPICard({ title, value, trend, trendUp, trendAlert, icon }: any) {
+function KPICard({ title, value, trend, trendUp, trendAlert, icon }: { title: string, value: string, trend: string, trendUp?: boolean, trendAlert?: boolean, icon: any }) {
     return (
         <Card size="2" style={{ borderRadius: '16px' }}>
-            <Flex justify="between" align="start">
-                <Box>
-                    <Text size="1" weight="bold" color="gray" style={{ textTransform: 'uppercase' }}>{title}</Text>
-                    <Text size="6" weight="regular" style={{ marginTop: '4px' }}>{value}</Text>
-                </Box>
-                <Box style={{ padding: '8px', borderRadius: '8px', backgroundColor: 'var(--gray-3)', color: 'var(--gray-11)' }}>
+            <Flex justify="between" align="center" mb="2">
+                <Text size="2" color="gray">{title}</Text>
+                <Box style={{ color: 'var(--gray-10)' }}>
                     {icon}
                 </Box>
             </Flex>
-            <Flex align="center" gap="1" mt="3">
-                {trendAlert ? (
-                    <Text size="1" color="red" weight="medium">{trend}</Text>
-                ) : (
-                    <>
-                        {trendUp ? <RocketIcon style={{ transform: 'rotate(0deg)', color: 'var(--teal-9)' }} width="12" /> : <Text size="1" color="gray">-</Text>}
-                        <Text size="1" color={trendUp ? 'teal' : 'gray'} weight="medium">{trend}</Text>
-                    </>
+            <Heading size="6" mb="1" weight="bold">{value}</Heading>
+            <Flex align="center" gap="1">
+                {trendUp !== undefined && (
+                    <Box style={{ color: trendUp ? 'var(--green-9)' : 'var(--red-9)' }}>
+                        {trendUp ? <ArrowTopRightIcon /> : <ArrowBottomRightIcon />}
+                    </Box>
                 )}
+                {trendAlert && <ExclamationTriangleIcon color="var(--orange-9)" />}
+                <Text size="1" color={trendUp ? 'green' : trendAlert ? 'orange' : 'gray'}>
+                    {trend}
+                </Text>
             </Flex>
         </Card>
+    )
+}
+
+function ArrowTopRightIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 5V6H9.2929L2.14645 13.1464L2.85355 13.8536L10 6.70711V11H11V5H5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+    )
+}
+
+function ArrowBottomRightIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.85355 2.14645L2.14645 2.85355L9.2929 10H5V11H11V5H10V9.2929L2.85355 2.14645Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+    )
+}
+
+function TruckIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 2C1.22386 2 1 2.22386 1 2.5V10.5C1 10.7761 1.22386 11 1.5 11H2.03061C2.1724 12.1332 3.14088 13 4.3 13C5.45912 13 6.4276 12.1332 6.56939 11H8.43061C8.5724 12.1332 9.54088 13 10.7 13C11.8591 13 12.8276 12.1332 12.9694 11H13.5C13.7761 11 14 10.7761 14 10.5V6.57424C14 6.2236 13.8166 5.8959 13.5234 5.70044L11.5234 4.36711C11.21 4.15818 10.8427 4.04545 10.466 4.04545H9V2.5C9 2.22386 8.77614 2 8.5 2H1.5ZM4.3 12C3.74771 12 3.3 11.5523 3.3 11C3.3 10.4477 3.74771 10 4.3 10C4.85229 10 5.3 10.4477 5.3 11C5.3 11.5523 4.85229 12 4.3 12ZM10.7 12C10.1477 12 9.7 11.5523 9.7 11C9.7 10.4477 10.1477 10 10.7 10C11.2523 10 11.7 10.4477 11.7 11C11.7 11.5523 11.2523 12 10.7 12ZM10 5.04545V6.5H12.6975L10.5117 5.04283L10.466 5.04545H10ZM9 5.04545V6.5H2V3H8V5.04545H9ZM2 7.5V10H2.03061C2.1724 8.86684 3.14088 8 4.3 8C5.45912 8 6.4276 8.86684 6.56939 10H8.43061C8.5724 8.86684 9.54088 8 10.7 8C11.8591 8 12.8276 8.86684 12.9694 10H13V7.5H2Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
     )
 }

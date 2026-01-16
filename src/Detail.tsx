@@ -1,36 +1,45 @@
-import { Button, Card, Flex, Grid, Heading, Text, TextField, Badge, Table, IconButton, Separator, Box, Checkbox, Dialog, DropdownMenu, Avatar, RadioGroup, Tabs } from '@radix-ui/themes'
+import { Button, Card, Flex, Grid, Heading, Text, TextField, Badge, Table, IconButton, Separator, Box, Checkbox, Dialog, DropdownMenu, Avatar, RadioGroup, Tabs, TextArea } from '@radix-ui/themes'
 import {
+    HomeIcon,
     MagnifyingGlassIcon,
-    ChevronDownIcon,
-    ChevronUpIcon,
-    ChevronRightIcon,
-    Share1Icon,
-    DownloadIcon,
-    PlusIcon,
-    FileTextIcon,
-    PaperPlaneIcon,
+    BellIcon,
+    QuestionMarkCircledIcon,
+    GearIcon,
+    LightningBoltIcon,
     CheckCircledIcon,
-    InfoCircledIcon,
+    FileTextIcon,
+    Pencil2Icon,
     ExclamationTriangleIcon,
-    ComponentPlaceholderIcon,
+    ArchiveIcon,
+    ActivityLogIcon,
+    ClockIcon,
+    PersonIcon,
+    ArrowRightIcon,
+    UpdateIcon,
+    MagicWandIcon,
+    InfoCircledIcon,
+    Link2Icon,
+    PaperPlaneIcon,
+    CheckIcon,
+    DownloadIcon,
+    Pencil1Icon,
+    Cross2Icon,
     SunIcon,
     MoonIcon,
-    HomeIcon,
     CubeIcon,
     BarChartIcon,
     ClipboardIcon,
     ViewGridIcon,
-    PersonIcon,
     CalendarIcon,
     DotsHorizontalIcon,
     ExitIcon,
-    MagicWandIcon,
-    UpdateIcon,
-    Pencil1Icon,
-    Link2Icon,
-    CheckIcon,
-    ArrowRightIcon
-} from '@radix-ui/react-icons'
+    ChevronRightIcon,
+    Share1Icon,
+    PlusIcon,
+    ChevronUpIcon,
+    ChevronDownIcon,
+    ComponentPlaceholderIcon
+} from '@radix-ui/react-icons';
 import { useState } from 'react'
 import * as Progress from '@radix-ui/react-progress'
 import { useTheme } from './ThemeContext';
@@ -55,56 +64,122 @@ const items = [
     { id: "SKU-OFF-2025-008", name: "Bench Seating 3-Seat", category: "Waiting Series", properties: "Metal / Chrome", stock: 28, status: "Low Stock" as const, statusColor: 'orange' as const },
 ]
 
-const messages = [
-    {
-        id: 1,
-        sender: "System",
-        avatar: "",
-        content: "Order #ORD-2055 has been flagged for manual review due to stock discrepancy.",
-        time: "2 hours ago",
-        type: "system",
-    },
-    {
-        id: 2,
-        sender: "AI Assistant",
-        avatar: "AI",
-        content: "I've detected a 5-item discrepancy between local and remote warehouse counts for SKU-OFF-2025-003. Recommended action: Synchronize with Warehouse DB or perform manual count.",
-        time: "2 hours ago",
-        type: "ai",
-    },
-    {
-        id: 3,
-        sender: "Sarah Chen",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-        content: "@InventoryManager I'm verifying the physical stock in Zone B. Will update shortly.",
-        time: "1 hour ago",
-        type: "user",
-    },
-    {
-        id: 4,
-        sender: "Sarah Chen",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-        content: "I've contacted the client. They want to proceed with the available items. I've updated the order line items accordingly.",
-        time: "15 mins ago",
-        type: "user",
-    },
-    {
-        id: 5,
-        sender: "System",
-        avatar: "",
-        content: "Sarah Chen triggered context action: Process Quote",
-        time: "Just now",
-        type: "system",
-    },
-    {
-        id: 6,
-        sender: "AI Assistant",
-        avatar: "AI",
-        content: "Quote processing initiated. Analyzing updated line items and generating revised PDF...",
-        time: "Just now",
-        type: "ai",
+interface Message {
+    id: number | string;
+    sender: string;
+    avatar: string;
+    content: React.ReactNode;
+    time: string;
+    type: 'system' | 'ai' | 'user' | 'action_processing' | 'action_success';
+}
+
+
+
+const DiscrepancyResolutionFlow = () => {
+    const [status, setStatus] = useState<'initial' | 'requesting' | 'pending' | 'approved'>('initial')
+    const [requestText, setRequestText] = useState('')
+
+    const handleRequest = () => {
+        setStatus('pending')
+        setTimeout(() => setStatus('approved'), 3000)
     }
-]
+
+    if (status === 'initial') {
+        return (
+            <Flex direction="column" gap="3">
+                <Flex align="center" gap="2">
+                    <ExclamationTriangleIcon color="orange" />
+                    <Text weight="bold" color="orange">Found 3 discrepancies in recent shipments.</Text>
+                </Flex>
+                <Flex direction="column" gap="1" style={{ paddingLeft: '20px' }}>
+                    <Flex align="center" gap="2">
+                        <ExclamationTriangleIcon color="orange" width="12" height="12" />
+                        <Text size="2" color="gray">Order #ORD-2054: Weight mismatch</Text>
+                    </Flex>
+                    <Flex align="center" gap="2">
+                        <ExclamationTriangleIcon color="orange" width="12" height="12" />
+                        <Text size="2" color="gray">Order #ORD-2051: Timestamp sync error</Text>
+                    </Flex>
+                    <Flex align="center" gap="2">
+                        <ExclamationTriangleIcon color="orange" width="12" height="12" />
+                        <Text size="2" color="gray">Order #ORD-2048: Missing carrier update</Text>
+                    </Flex>
+                </Flex>
+                <Flex gap="2" mt="1">
+                    <Button size="1" variant="soft" color="blue">
+                        <UpdateIcon /> Sync & Report
+                    </Button>
+                    <Button
+                        size="1" variant="outline" color="gray"
+                        onClick={() => setStatus('requesting')}
+                    >
+                        <Pencil1Icon /> Request Changes
+                    </Button>
+                </Flex>
+            </Flex>
+        )
+    }
+
+    if (status === 'requesting') {
+        return (
+            <Flex direction="column" gap="3" className="animate-in fade-in slide-in-from-bottom-2">
+                <Text size="2" weight="medium">Describe required changes:</Text>
+                <TextArea
+                    placeholder="E.g., Update weight for ORD-2054 to 48kg..."
+                    value={requestText}
+                    onChange={(e) => setRequestText(e.target.value)}
+                    style={{ minHeight: '80px' }}
+                />
+                <Flex justify="between" align="center">
+                    <Button size="1" variant="ghost" color="gray">
+                        <Link2Icon /> Attach File
+                    </Button>
+                    <Flex gap="2">
+                        <Button size="1" variant="ghost" onClick={() => setStatus('initial')} color="gray">Cancel</Button>
+                        <Button size="1" onClick={handleRequest}>Submit Request</Button>
+                    </Flex>
+                </Flex>
+            </Flex>
+        )
+    }
+
+    if (status === 'pending') {
+        return (
+            <Flex direction="column" gap="3" className="animate-in fade-in">
+                <Flex align="center" gap="2">
+                    <UpdateIcon className="animate-spin" color="blue" />
+                    <Text color="blue">Requesting approval from Logistics Manager...</Text>
+                </Flex>
+            </Flex>
+        )
+    }
+
+    if (status === 'approved') {
+        return (
+            <Flex direction="column" gap="3" className="animate-in fade-in">
+                <Flex align="center" gap="2">
+                    <CheckCircledIcon color="green" width="20" height="20" />
+                    <Text weight="bold" color="green">Changes approved. PO updated.</Text>
+                </Flex>
+                <Card style={{ backgroundColor: 'var(--gray-3)', padding: '12px' }}>
+                    <Flex align="center" justify="between">
+                        <Flex align="center" gap="3">
+                            <Box style={{ width: '32px', height: '32px', backgroundColor: 'var(--red-3)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <FileTextIcon color="red" />
+                            </Box>
+                            <Box>
+                                <Text size="2" weight="medium" as="div">PO_Revised_Final.pdf</Text>
+                                <Text size="1" color="gray" as="div">Updated just now</Text>
+                            </Box>
+                        </Flex>
+                        <Button size="1" variant="ghost" color="blue">Download</Button>
+                    </Flex>
+                </Card>
+            </Flex>
+        )
+    }
+    return null
+}
 
 const collaborators = [
     { name: "Sarah Chen", role: "Logistics Mgr", status: "online", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" },
@@ -116,6 +191,185 @@ const documents = [
     { name: "Packing_Slip_2055.pdf", size: "245 KB", uploaded: "Jan 12, 2025" },
     { name: "Invoice_INV-8992.pdf", size: "1.2 MB", uploaded: "Jan 12, 2025" },
 ]
+
+const DiscrepancyActionCard = ({ msg }: { msg: Message }) => {
+    const [isRequesting, setIsRequesting] = useState(false)
+    const [requestText, setRequestText] = useState('')
+    const [status, setStatus] = useState<'initial' | 'pending' | 'approved'>('initial')
+
+    const handleSubmit = () => {
+        setStatus('pending')
+        setTimeout(() => {
+            setStatus('approved')
+            setIsRequesting(false)
+        }, 2000)
+    }
+
+    if (status === 'pending') {
+        return (
+            <Box p="3" style={{ borderRadius: 'var(--radius-3)', backgroundColor: 'var(--green-3)', border: '1px solid var(--green-6)' }}>
+                <Flex align="center" gap="2">
+                    <UpdateIcon style={{ animation: 'spin 1s linear infinite' }} color="var(--green-11)" />
+                    <Text size="2" weight="medium" style={{ color: 'var(--green-11)' }}>Requesting approval...</Text>
+                </Flex>
+            </Box>
+        )
+    }
+
+    if (status === 'approved') {
+        return (
+            <Box style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                <Box p="3" style={{ borderRadius: 'var(--radius-3)', backgroundColor: 'var(--green-3)', border: '1px solid var(--green-6)' }}>
+                    <Flex justify="between" align="center" mb="1">
+                        <Badge color="green" variant="outline">Action Updated</Badge>
+                        <Text size="1" color="gray">{msg.time}</Text>
+                    </Flex>
+                    <Flex gap="2" align="center" mb="3">
+                        <CheckIcon color="var(--green-11)" width="20" height="20" />
+                        <Text size="2" weight="medium" style={{ color: 'var(--green-11)' }}>Changes approved. PO updated.</Text>
+                    </Flex>
+
+                    <Flex align="center" gap="3" style={{ backgroundColor: 'var(--color-background)', padding: '12px', borderRadius: 'var(--radius-2)', border: '1px solid var(--gray-6)' }}>
+                        <Flex align="center" justify="center" style={{ width: 40, height: 40, borderRadius: 'var(--radius-2)', backgroundColor: 'var(--color-background)', border: '1px solid var(--gray-6)' }}>
+                            <FileTextIcon style={{ width: 20, height: 20, color: 'var(--red-9)' }} />
+                        </Flex>
+                        <Box flexGrow="1">
+                            <Text size="2" weight="medium" style={{ display: 'block' }}>PO_Revised_Final.pdf</Text>
+                            <Text size="1" color="gray">2.4 MB • Generated just now</Text>
+                        </Box>
+                        <IconButton variant="ghost" color="gray">
+                            <DownloadIcon />
+                        </IconButton>
+                    </Flex>
+                </Box>
+            </Box>
+        )
+    }
+
+    return (
+        <Box p="3" style={{
+            borderRadius: 'var(--radius-3)',
+            backgroundColor: isRequesting ? 'var(--color-background)' : 'var(--green-3)',
+            border: isRequesting ? '1px solid var(--blue-8)' : '1px solid var(--green-6)',
+            boxShadow: isRequesting ? '0 0 0 1px var(--blue-8)' : 'none',
+            transition: 'all 0.3s ease'
+        }}>
+            {!isRequesting ? (
+                <>
+                    <Flex justify="between" align="center" mb="1">
+                        <Text size="2" weight="bold" style={{ color: 'var(--green-11)' }}>{msg.sender}</Text>
+                        <Text size="1" color="gray">{msg.time}</Text>
+                    </Flex>
+                    <Flex align="center" gap="2" mb="2">
+                        <Badge color="green" variant="outline">Success</Badge>
+                    </Flex>
+                    <Text size="2" mb="2" style={{ color: 'var(--gray-12)' }}>{msg.content}</Text>
+
+                    <Box mt="3">
+                        <Flex direction="column" gap="3">
+                            <Flex align="center" gap="3" style={{ backgroundColor: 'var(--color-background)', padding: '12px', borderRadius: 'var(--radius-2)', border: '1px solid var(--gray-6)' }}>
+                                <Flex align="center" justify="center" style={{ width: 40, height: 40, borderRadius: 'var(--radius-2)', backgroundColor: 'var(--red-3)', border: '1px solid var(--red-6)' }}>
+                                    <FileTextIcon style={{ width: 20, height: 20, color: 'var(--red-9)' }} />
+                                </Flex>
+                                <Box flexGrow="1">
+                                    <Text size="2" weight="medium" style={{ display: 'block' }}>PO_ORD-2055_Final.pdf</Text>
+                                    <Text size="1" color="gray">2.4 MB • Generated just now</Text>
+                                </Box>
+                                <IconButton variant="ghost" color="gray">
+                                    <DownloadIcon />
+                                </IconButton>
+                            </Flex>
+
+                            <Box style={{ padding: '8px 0 8px 16px', borderLeft: '4px solid var(--amber-9)' }}>
+                                <Flex gap="3">
+                                    <ExclamationTriangleIcon style={{ width: 16, height: 16, color: 'var(--amber-9)', marginTop: 2 }} />
+                                    <Box>
+                                        <Text size="2" weight="bold" style={{ color: 'var(--gray-12)', display: 'block' }}>Attention Needed</Text>
+                                        <Text size="2" style={{ color: 'var(--gray-11)' }}>Discrepancy detected for <Text weight="bold" style={{ color: 'var(--gray-12)' }}>SKU-OFF-2025-003</Text>:</Text>
+                                        <Flex mt="2" gap="4" align="center">
+                                            <Flex align="center" gap="2">
+                                                <Text size="1" weight="medium" style={{ color: 'var(--gray-10)', textTransform: 'uppercase' }}>Warehouse</Text>
+                                                <Badge variant="soft" color="gray" style={{ fontFamily: 'monospace' }}>42</Badge>
+                                            </Flex>
+                                            <Box style={{ width: 1, height: 16, backgroundColor: 'var(--gray-6)' }} />
+                                            <Flex align="center" gap="2">
+                                                <Text size="1" weight="medium" style={{ color: 'var(--gray-10)', textTransform: 'uppercase' }}>Local</Text>
+                                                <Badge variant="soft" color="gray" style={{ fontFamily: 'monospace' }}>35</Badge>
+                                            </Flex>
+                                        </Flex>
+                                    </Box>
+                                </Flex>
+                            </Box>
+
+                            <Flex align="center" gap="3" style={{ paddingTop: '8px' }}>
+                                <Button size="1" variant="solid" color="gray" highContrast style={{ cursor: 'pointer' }}>Sync Database</Button>
+                                <Button size="1" variant="outline" color="gray" style={{ cursor: 'pointer', backgroundColor: 'var(--color-background)' }}>Resolve Manually</Button>
+                                <Button
+                                    size="1"
+                                    variant="ghost"
+                                    color="gray"
+                                    style={{ cursor: 'pointer', marginLeft: 'auto' }}
+                                    onClick={() => setIsRequesting(true)}
+                                >
+                                    <Pencil1Icon style={{ marginRight: 4 }} /> Request Changes
+                                </Button>
+                            </Flex>
+
+                            <Box style={{ backgroundColor: 'var(--color-background)', padding: '12px', borderRadius: 'var(--radius-2)', border: '1px solid var(--green-6)' }}>
+                                <Text size="1" weight="bold" color="gray" style={{ marginBottom: 8, textTransform: 'uppercase' }}>AI Summary</Text>
+                                <Flex direction="column" gap="1">
+                                    <Flex gap="2" align="start">
+                                        <CheckIcon color="var(--green-9)" style={{ marginTop: '2px' }} />
+                                        <Text size="1" color="gray">Updated SKU-OFF-2025-003 stock count to 42</Text>
+                                    </Flex>
+                                    <Flex gap="2" align="start">
+                                        <CheckIcon color="var(--green-9)" style={{ marginTop: '2px' }} />
+                                        <Text size="1" color="gray">Applied 5% bulk discount for &gt;500 units</Text>
+                                    </Flex>
+                                </Flex>
+                            </Box>
+                        </Flex>
+                    </Box>
+                </>
+            ) : (
+                <Flex direction="column" gap="3" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                    <Flex justify="between" align="center">
+                        <Text size="2" weight="bold">Describe required changes:</Text>
+                        <IconButton size="1" variant="ghost" color="gray" onClick={() => setIsRequesting(false)}>
+                            <Cross2Icon />
+                        </IconButton>
+                    </Flex>
+                    <textarea
+                        className="rt-TextArea rt-r-size-2 rt-variant-surface"
+                        style={{
+                            width: '100%',
+                            minHeight: '80px',
+                            padding: '8px',
+                            borderRadius: 'var(--radius-2)',
+                            fontSize: 'var(--font-size-2)',
+                            resize: 'vertical',
+                            border: '1px solid var(--gray-6)',
+                            backgroundColor: 'var(--gray-2)'
+                        }}
+                        placeholder="E.g., Update weight for ORD-2054 to 48kg..."
+                        autoFocus
+                        value={requestText}
+                        onChange={(e) => setRequestText(e.target.value)}
+                    />
+                    <Flex justify="between" align="center">
+                        <Button size="1" variant="ghost" color="gray">
+                            <Link2Icon style={{ marginRight: 4 }} /> Attach File
+                        </Button>
+                        <Flex gap="2">
+                            <Button size="1" variant="soft" color="gray" onClick={() => setIsRequesting(false)}>Cancel</Button>
+                            <Button size="1" onClick={handleSubmit}>Submit Request</Button>
+                        </Flex>
+                    </Flex>
+                </Flex>
+            )}
+        </Box>
+    )
+}
 
 export default function Detail({ onBack }: { onBack: () => void }) {
     const [selectedItem, setSelectedItem] = useState(items[0])
@@ -138,6 +392,64 @@ export default function Detail({ onBack }: { onBack: () => void }) {
     }
 
     const [isAppsOpen, setIsAppsOpen] = useState(false)
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            id: 1,
+            sender: "System",
+            avatar: "",
+            content: "Order #ORD-2055 has been flagged for manual review due to stock discrepancy.",
+            time: "2 hours ago",
+            type: "system",
+        },
+        {
+            id: 2,
+            sender: "AI Assistant",
+            avatar: "AI",
+            content: <DiscrepancyResolutionFlow />,
+            time: "2 hours ago",
+            type: "ai",
+        },
+        {
+            id: 3,
+            sender: "Sarah Chen",
+            avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+            content: "@InventoryManager I'm verifying the physical stock in Zone B. Will update shortly.",
+            time: "1 hour ago",
+            type: "user",
+        },
+        {
+            id: 4,
+            sender: "Sarah Chen",
+            avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+            content: "I've contacted the client. They want to proceed with the available items. I've updated the order line items accordingly.",
+            time: "15 mins ago",
+            type: "user",
+        },
+        {
+            id: 5,
+            sender: "System",
+            avatar: "",
+            content: "Sarah Chen triggered context action: Process Quote",
+            time: "Just now",
+            type: "system",
+        },
+        {
+            id: 6,
+            sender: "AI Assistant",
+            avatar: "AI",
+            content: "Quote processing initiated.",
+            time: "Just now",
+            type: "action_processing",
+        },
+        {
+            id: 7,
+            sender: "AI Assistant",
+            avatar: "AI",
+            content: "Analysis complete. I've generated the revised Purchase Order, but found stock discrepancies that require attention.",
+            time: "Just now",
+            type: "action_success",
+        }
+    ])
     const onLogout = () => { console.log('Logout') }
 
     return (
@@ -856,6 +1168,31 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                                                 Today, 9:23 AM
                                             </Badge>
                                         </Flex>
+                                        {/* Assuming messages array is defined here or above */}
+                                        {/* Example messages array structure (for context, not part of the actual code document)
+                                        const messages = [
+                                            { id: 1, sender: "System", content: "System updated order status to 'Pending Review'", time: "9:23 AM", type: "system" },
+                                            { id: 2, sender: "John Doe", avatar: "/user-avatar.png", content: "Can someone confirm the stock for SKU-OFF-2025-003?", time: "9:25 AM", type: "user" },
+                                            { id: 3, sender: "AI Assistant", avatar: "AI", content: "The current stock for SKU-OFF-2025-003 is 37 units. There's a discrepancy with the warehouse log showing 42 units. Would you like me to reconcile?", time: "9:26 AM", type: "ai" },
+                                            { id: 4, sender: "John Doe", avatar: "/user-avatar.png", content: "Yes, please reconcile and generate a new purchase order if needed.", time: "9:27 AM", type: "user" },
+                                            { id: 5, sender: "AI Assistant", avatar: "AI", content: "Reconciling stock and preparing purchase order. This may take a moment.", time: "9:28 AM", type: "ai" },
+                                            {
+                                                id: 6,
+                                                sender: "AI Assistant",
+                                                content: "Processing stock reconciliation and purchase order generation.",
+                                                time: "Just now",
+                                                type: "action_processing",
+                                            },
+                                            {
+                                                id: 7,
+                                                sender: "AI Assistant",
+                                                avatar: "AI",
+                                                content: "Analysis complete. I've generated the revised Purchase Order and updated the stock database.",
+                                                time: "Just now",
+                                                type: "action_success",
+                                            }
+                                        ]
+                                        */}
 
                                         {messages.map((msg) => (
                                             <Flex key={msg.id} gap="3" justify={msg.type === 'user' ? 'end' : 'start'}>
@@ -863,6 +1200,14 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                                                     msg.type === 'system' ? (
                                                         <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--gray-4)' }}>
                                                             <UpdateIcon />
+                                                        </Flex>
+                                                    ) : msg.type === 'action_processing' ? (
+                                                        <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--blue-3)', border: '1px solid var(--blue-6)' }}>
+                                                            <FileTextIcon color="var(--blue-11)" />
+                                                        </Flex>
+                                                    ) : msg.type === 'action_success' ? (
+                                                        <Flex align="center" justify="center" style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--green-3)', border: '1px solid var(--green-6)' }}>
+                                                            <CheckIcon color="var(--green-11)" />
                                                         </Flex>
                                                     ) : (
                                                         <Avatar
@@ -878,13 +1223,33 @@ export default function Detail({ onBack }: { onBack: () => void }) {
                                                 <Box style={{ maxWidth: '85%' }}>
                                                     {msg.type === 'system' ? (
                                                         <Text size="2" color="gray">
-                                                            <Text weight="bold">{msg.sender}</Text> {msg.content.replace('System ', '')}
+                                                            <Text weight="bold">{msg.sender}</Text> {typeof msg.content === 'string' ? msg.content.replace('System ', '') : msg.content}
                                                         </Text>
+                                                    ) : msg.type === 'action_processing' ? (
+                                                        <Card size="1" style={{ backgroundColor: 'var(--blue-2)', borderColor: 'var(--blue-6)' }}>
+                                                            <Flex justify="between" align="center" mb="1">
+                                                                <Text size="2" weight="bold" style={{ color: 'var(--blue-11)' }}>{msg.sender}</Text>
+                                                                <Text size="1" color="gray">{msg.time}</Text>
+                                                            </Flex>
+                                                            <Flex align="center" gap="2" mb="2">
+                                                                <Badge variant="outline" color="blue" radius="full">Action</Badge>
+                                                            </Flex>
+                                                            <Text size="2" style={{ color: 'var(--gray-12)' }}>{msg.content}</Text>
+                                                            <Flex align="center" gap="2" mt="3" style={{ padding: '8px', backgroundColor: 'var(--color-background)', borderRadius: '6px', border: '1px solid var(--blue-4)' }}>
+                                                                <UpdateIcon style={{ animation: 'spin 1s linear infinite' }} color="var(--blue-9)" />
+                                                                <Text size="1" weight="medium" style={{ color: 'var(--blue-9)' }}>Processing request...</Text>
+                                                            </Flex>
+                                                        </Card>
+                                                    ) : msg.type === 'action_success' ? (
+                                                        <DiscrepancyActionCard msg={msg} />
                                                     ) : (
                                                         <Card size="1" style={{ backgroundColor: msg.type === 'user' ? 'var(--gray-4)' : msg.type === 'ai' ? 'var(--purple-3)' : 'var(--card-background-color)' }}>
-                                                            <Text size="2" weight="bold" style={{ display: 'block', marginBottom: '4px', color: msg.type === 'ai' ? 'var(--purple-11)' : 'inherit' }}>
-                                                                {msg.sender}
-                                                            </Text>
+                                                            <Flex justify="between" align="center" mb="1">
+                                                                <Text size="2" weight="bold" style={{ display: 'block', color: msg.type === 'ai' ? 'var(--purple-11)' : 'inherit' }}>
+                                                                    {msg.sender}
+                                                                </Text>
+                                                                <Text size="1" color="gray">{msg.time}</Text>
+                                                            </Flex>
                                                             <Text size="2" style={{ color: 'var(--gray-12)' }}>
                                                                 {msg.content}
                                                             </Text>
